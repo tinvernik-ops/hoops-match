@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/app/profile")({
   component: ProfilePage,
@@ -18,13 +18,15 @@ const schema = z.object({
   username: z.string().trim().min(3).max(24).regex(/^[a-zA-Z0-9_.-]+$/),
   phone: z.string().trim().min(7).max(20).regex(/^[+\d\s().-]+$/),
   height_cm: z.number().int().min(120).max(250),
+  vertical_cm: z.number().int().min(10).max(150).nullable(),
+  weight_kg: z.number().int().min(30).max(250).nullable(),
 });
 
 function ProfilePage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ username: "", phone: "", height_cm: "" });
+  const [form, setForm] = useState({ username: "", phone: "", height_cm: "", vertical_cm: "", weight_kg: "" });
 
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -42,6 +44,8 @@ function ProfilePage() {
         username: profile.username ?? "",
         phone: profile.phone ?? "",
         height_cm: profile.height_cm?.toString() ?? "",
+        vertical_cm: profile.vertical_cm?.toString() ?? "",
+        weight_kg: profile.weight_kg?.toString() ?? "",
       });
     }
   }, [profile]);
@@ -54,6 +58,8 @@ function ProfilePage() {
         username: form.username,
         phone: form.phone,
         height_cm: Number(form.height_cm),
+        vertical_cm: form.vertical_cm ? Number(form.vertical_cm) : null,
+        weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
       });
       const { error } = await supabase.from("profiles").update(v).eq("id", user!.id);
       if (error) throw error;
@@ -82,10 +88,13 @@ function ProfilePage() {
         <div className="grid place-items-center size-20 rounded-full bg-gradient-to-br from-primary to-rim text-primary-foreground text-display text-3xl font-bold">
           {(profile?.username ?? "H").slice(0, 1).toUpperCase()}
         </div>
-        <div>
-          <h1 className="text-display text-2xl font-bold">@{profile?.username}</h1>
-          <p className="text-sm text-muted-foreground">{user?.email}</p>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-display text-2xl font-bold truncate">@{profile?.username}</h1>
+          <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
         </div>
+        <Link to="/app/settings" className="grid place-items-center size-10 rounded-full bg-secondary" aria-label="Settings">
+          <Settings className="size-5" />
+        </Link>
       </header>
 
       <form onSubmit={onSave} className="space-y-4">
@@ -104,6 +113,20 @@ function ProfilePage() {
           <Input id="height" type="number" min={120} max={250} value={form.height_cm}
             onChange={(e) => setForm({ ...form, height_cm: e.target.value })}
             placeholder="e.g. 185" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="vertical">Vertical (cm)</Label>
+            <Input id="vertical" type="number" min={10} max={150} value={form.vertical_cm}
+              onChange={(e) => setForm({ ...form, vertical_cm: e.target.value })}
+              placeholder="opt." />
+          </div>
+          <div>
+            <Label htmlFor="weight">Weight (kg)</Label>
+            <Input id="weight" type="number" min={30} max={250} value={form.weight_kg}
+              onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
+              placeholder="opt." />
+          </div>
         </div>
         <Button type="submit" disabled={busy} className="w-full h-12 font-bold" size="lg">
           {busy ? <Loader2 className="animate-spin" /> : "Save"}
