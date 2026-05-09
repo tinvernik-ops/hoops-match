@@ -35,51 +35,63 @@
   --font-display: "Bebas Neue", "Oswald", system-ui, sans-serif;
 }
 
+/* Light mode (day) */
 :root {
   --radius: 0.875rem;
-
-  /* Hoops dark court theme */
-  --background: oklch(0.16 0.02 50);
-  --foreground: oklch(0.97 0.01 80);
-
-  --card: oklch(0.21 0.025 50);
-  --card-foreground: oklch(0.97 0.01 80);
-
-  --popover: oklch(0.21 0.025 50);
-  --popover-foreground: oklch(0.97 0.01 80);
-
-  /* Basketball orange */
-  --primary: oklch(0.72 0.19 45);
-  --primary-foreground: oklch(0.18 0.03 50);
-
-  --secondary: oklch(0.27 0.03 50);
-  --secondary-foreground: oklch(0.97 0.01 80);
-
-  --muted: oklch(0.25 0.02 50);
-  --muted-foreground: oklch(0.7 0.02 80);
-
-  --accent: oklch(0.32 0.04 45);
-  --accent-foreground: oklch(0.97 0.01 80);
-
-  --destructive: oklch(0.6 0.22 25);
+  --background: oklch(0.98 0.01 80);
+  --foreground: oklch(0.18 0.03 50);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.03 50);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.03 50);
+  --primary: oklch(0.65 0.2 40);
+  --primary-foreground: oklch(0.99 0.01 80);
+  --secondary: oklch(0.94 0.02 80);
+  --secondary-foreground: oklch(0.18 0.03 50);
+  --muted: oklch(0.95 0.015 80);
+  --muted-foreground: oklch(0.45 0.03 60);
+  --accent: oklch(0.92 0.05 60);
+  --accent-foreground: oklch(0.2 0.04 50);
+  --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0.01 80);
-
-  --border: oklch(0.3 0.025 50);
-  --input: oklch(0.27 0.025 50);
-  --ring: oklch(0.72 0.19 45);
-
-  --court: oklch(0.45 0.13 60);
-  --court-foreground: oklch(0.97 0.02 80);
-  --rim: oklch(0.7 0.18 30);
-
-  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.19 45), oklch(0.62 0.21 30));
-  --gradient-court: radial-gradient(ellipse at top, oklch(0.32 0.05 45), oklch(0.14 0.02 50));
-  --shadow-glow: 0 10px 40px -10px oklch(0.7 0.2 40 / 0.5);
+  --border: oklch(0.88 0.02 70);
+  --input: oklch(0.93 0.02 70);
+  --ring: oklch(0.65 0.2 40);
+  --court: oklch(0.7 0.15 60);
+  --court-foreground: oklch(0.18 0.03 50);
+  --rim: oklch(0.6 0.21 30);
+  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.2 45), oklch(0.6 0.22 30));
+  --gradient-court: radial-gradient(ellipse at top, oklch(0.96 0.04 70), oklch(0.92 0.03 80));
+  --shadow-glow: 0 10px 40px -10px oklch(0.65 0.2 40 / 0.35);
 }
 
+/* Dark mode (night) */
 .dark {
   --background: oklch(0.16 0.02 50);
   --foreground: oklch(0.97 0.01 80);
+  --card: oklch(0.21 0.025 50);
+  --card-foreground: oklch(0.97 0.01 80);
+  --popover: oklch(0.21 0.025 50);
+  --popover-foreground: oklch(0.97 0.01 80);
+  --primary: oklch(0.72 0.19 45);
+  --primary-foreground: oklch(0.18 0.03 50);
+  --secondary: oklch(0.27 0.03 50);
+  --secondary-foreground: oklch(0.97 0.01 80);
+  --muted: oklch(0.25 0.02 50);
+  --muted-foreground: oklch(0.7 0.02 80);
+  --accent: oklch(0.32 0.04 45);
+  --accent-foreground: oklch(0.97 0.01 80);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 80);
+  --border: oklch(0.3 0.025 50);
+  --input: oklch(0.27 0.025 50);
+  --ring: oklch(0.72 0.19 45);
+  --court: oklch(0.45 0.13 60);
+  --court-foreground: oklch(0.97 0.02 80);
+  --rim: oklch(0.7 0.18 30);
+  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.19 45), oklch(0.62 0.21 30));
+  --gradient-court: radial-gradient(ellipse at top, oklch(0.32 0.05 45), oklch(0.14 0.02 50));
+  --shadow-glow: 0 10px 40px -10px oklch(0.7 0.2 40 / 0.5);
 }
 
 @layer base {

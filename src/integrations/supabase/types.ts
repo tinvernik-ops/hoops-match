@@ -14,6 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_players: {
+        Row: {
+          assists: number
+          blocks: number
+          game_id: string
+          id: string
+          points: number
+          rebounds: number
+          steals: number
+          team: Database["public"]["Enums"]["team_side"]
+          user_id: string
+        }
+        Insert: {
+          assists?: number
+          blocks?: number
+          game_id: string
+          id?: string
+          points?: number
+          rebounds?: number
+          steals?: number
+          team: Database["public"]["Enums"]["team_side"]
+          user_id: string
+        }
+        Update: {
+          assists?: number
+          blocks?: number
+          game_id?: string
+          id?: string
+          points?: number
+          rebounds?: number
+          steals?: number
+          team?: Database["public"]["Enums"]["team_side"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          league_id: string
+          location: string | null
+          notes: string | null
+          played_at: string
+          team_a_score: number
+          team_b_score: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          league_id: string
+          location?: string | null
+          notes?: string | null
+          played_at?: string
+          team_a_score?: number
+          team_b_score?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          league_id?: string
+          location?: string | null
+          notes?: string | null
+          played_at?: string
+          team_a_score?: number
+          team_b_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "games_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           created_at: string
@@ -56,6 +158,71 @@ export type Database = {
           },
         ]
       }
+      league_members: {
+        Row: {
+          joined_at: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leagues: {
+        Row: {
+          created_at: string
+          id: string
+          join_code: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          join_code?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          join_code?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leagues_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -67,6 +234,8 @@ export type Database = {
           phone: string
           updated_at: string
           username: string
+          vertical_cm: number | null
+          weight_kg: number | null
         }
         Insert: {
           created_at?: string
@@ -78,6 +247,8 @@ export type Database = {
           phone: string
           updated_at?: string
           username: string
+          vertical_cm?: number | null
+          weight_kg?: number | null
         }
         Update: {
           created_at?: string
@@ -89,6 +260,8 @@ export type Database = {
           phone?: string
           updated_at?: string
           username?: string
+          vertical_cm?: number | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -139,10 +312,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_league_member: {
+        Args: { _league_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       invite_status: "pending" | "accepted" | "declined" | "cancelled"
+      team_side: "A" | "B"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -271,6 +448,7 @@ export const Constants = {
   public: {
     Enums: {
       invite_status: ["pending", "accepted", "declined", "cancelled"],
+      team_side: ["A", "B"],
     },
   },
 } as const

@@ -19,6 +19,8 @@ const signupSchema = z.object({
   phone: z.string().trim().min(7, "Phone too short").max(20).regex(/^[+\d\s().-]+$/, "Invalid phone"),
   username: z.string().trim().min(3, "At least 3 characters").max(24).regex(/^[a-zA-Z0-9_.-]+$/, "Letters, numbers, _ . -"),
   password: z.string().min(8, "At least 8 characters").max(72),
+  vertical_cm: z.union([z.literal(""), z.coerce.number().int().min(10).max(150)]).optional(),
+  weight_kg: z.union([z.literal(""), z.coerce.number().int().min(30).max(250)]).optional(),
 });
 
 const loginSchema = z.object({
@@ -31,7 +33,7 @@ function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ email: "", phone: "", username: "", password: "" });
+  const [form, setForm] = useState({ email: "", phone: "", username: "", password: "", vertical_cm: "", weight_kg: "" });
 
   useEffect(() => {
     if (!authLoading && user) nav({ to: "/app" });
@@ -43,7 +45,7 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const v = signupSchema.parse(form);
-        const { error } = await supabase.auth.signUp({
+        const { data: signupData, error } = await supabase.auth.signUp({
           email: v.email,
           password: v.password,
           options: {
@@ -52,6 +54,15 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        // Optional fields go on the profile after signup
+        const vertical = typeof v.vertical_cm === "number" ? v.vertical_cm : null;
+        const weight = typeof v.weight_kg === "number" ? v.weight_kg : null;
+        if (signupData.user && (vertical != null || weight != null)) {
+          await supabase
+            .from("profiles")
+            .update({ vertical_cm: vertical, weight_kg: weight })
+            .eq("id", signupData.user.id);
+        }
         toast.success("Welcome to Hoops 🏀");
         nav({ to: "/app" });
       } else {
@@ -108,6 +119,18 @@ function AuthPage() {
                 <Label htmlFor="phone">Phone</Label>
                 <Input id="phone" type="tel" autoComplete="tel" required maxLength={20}
                   value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="vertical">Vertical (cm) <span className="text-muted-foreground font-normal">opt.</span></Label>
+                  <Input id="vertical" type="number" min={10} max={150} placeholder="e.g. 70"
+                    value={form.vertical_cm} onChange={(e) => setForm({ ...form, vertical_cm: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="weight">Weight (kg) <span className="text-muted-foreground font-normal">opt.</span></Label>
+                  <Input id="weight" type="number" min={30} max={250} placeholder="e.g. 80"
+                    value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} />
+                </div>
               </div>
             </>
           )}
