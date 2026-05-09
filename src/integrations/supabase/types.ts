@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      invites: {
+        Row: {
+          created_at: string
+          from_id: string
+          id: string
+          message: string | null
+          status: Database["public"]["Enums"]["invite_status"]
+          to_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_id: string
+          id?: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["invite_status"]
+          to_id: string
+        }
+        Update: {
+          created_at?: string
+          from_id?: string
+          id?: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["invite_status"]
+          to_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_from_id_fkey"
+            columns: ["from_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_to_id_fkey"
+            columns: ["to_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          height_cm: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          location_updated_at: string | null
+          phone: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          height_cm?: number | null
+          id: string
+          lat?: number | null
+          lng?: number | null
+          location_updated_at?: string | null
+          phone: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          height_cm?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_updated_at?: string | null
+          phone?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      ratings: {
+        Row: {
+          created_at: string
+          defense: number
+          id: string
+          offense: number
+          ratee_id: string
+          rater_id: string
+        }
+        Insert: {
+          created_at?: string
+          defense: number
+          id?: string
+          offense: number
+          ratee_id: string
+          rater_id: string
+        }
+        Update: {
+          created_at?: string
+          defense?: number
+          id?: string
+          offense?: number
+          ratee_id?: string
+          rater_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_ratee_id_fkey"
+            columns: ["ratee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_rater_id_fkey"
+            columns: ["rater_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +142,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      invite_status: "pending" | "accepted" | "declined" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +269,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      invite_status: ["pending", "accepted", "declined", "cancelled"],
+    },
   },
 } as const
