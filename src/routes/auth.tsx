@@ -45,7 +45,7 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const v = signupSchema.parse(form);
-        const { error } = await supabase.auth.signUp({
+        const { data: signupData, error } = await supabase.auth.signUp({
           email: v.email,
           password: v.password,
           options: {
@@ -54,6 +54,15 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        // Optional fields go on the profile after signup
+        const vertical = typeof v.vertical_cm === "number" ? v.vertical_cm : null;
+        const weight = typeof v.weight_kg === "number" ? v.weight_kg : null;
+        if (signupData.user && (vertical != null || weight != null)) {
+          await supabase
+            .from("profiles")
+            .update({ vertical_cm: vertical, weight_kg: weight })
+            .eq("id", signupData.user.id);
+        }
         toast.success("Welcome to Hoops 🏀");
         nav({ to: "/app" });
       } else {
