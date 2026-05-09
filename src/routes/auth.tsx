@@ -19,6 +19,8 @@ const signupSchema = z.object({
   phone: z.string().trim().min(7, "Phone too short").max(20).regex(/^[+\d\s().-]+$/, "Invalid phone"),
   username: z.string().trim().min(3, "At least 3 characters").max(24).regex(/^[a-zA-Z0-9_.-]+$/, "Letters, numbers, _ . -"),
   password: z.string().min(8, "At least 8 characters").max(72),
+  vertical_cm: z.union([z.literal(""), z.coerce.number().int().min(10).max(150)]).optional(),
+  weight_kg: z.union([z.literal(""), z.coerce.number().int().min(30).max(250)]).optional(),
 });
 
 const loginSchema = z.object({
@@ -31,7 +33,7 @@ function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ email: "", phone: "", username: "", password: "" });
+  const [form, setForm] = useState({ email: "", phone: "", username: "", password: "", vertical_cm: "", weight_kg: "" });
 
   useEffect(() => {
     if (!authLoading && user) nav({ to: "/app" });
