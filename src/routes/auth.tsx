@@ -122,8 +122,8 @@ function AuthPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="vertical">Vertical (in) <span className="text-muted-foreground font-normal">opt.</span></Label>
-                  <Input id="vertical" type="number" min={4} max={60} placeholder="e.g. 28"
+                  <Label htmlFor="vertical">Vertical (cm) <span className="text-muted-foreground font-normal">opt.</span></Label>
+                  <Input id="vertical" type="number" min={10} max={150} placeholder="e.g. 70"
                     value={form.vertical_cm} onChange={(e) => setForm({ ...form, vertical_cm: e.target.value })} />
                 </div>
                 <div>
