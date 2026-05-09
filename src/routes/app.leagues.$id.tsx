@@ -1,0 +1,172 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { fetchLeagueData, buildLeaderboard, buildTeamRecords } from "@/lib/leagues";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Plus, Copy, Trophy } from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/app/leagues/$id")({
+  component: LeagueDetail,
+});
+
+function LeagueDetail() {
+  const { id } = Route.useParams();
+  const { user } = useAuth();
+  const nav = useNavigate();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["league", id],
+    queryFn: () => fetchLeagueData(id),
+    enabled: !!user,
+  });
+
+  if (isLoading || !data) return <div className="p-6 text-muted-foreground">Loading…</div>;
+  if (!data.league) return <div className="p-6">League not found.</div>;
+
+  const leaderboard = buildLeaderboard(data.members, data.games, data.gamePlayers);
+  const teams = buildTeamRecords(data.members, data.games, data.gamePlayers);
+
+  return (
+    <main className="mx-auto w-full max-w-md px-4 pt-4">
+      <button onClick={() => nav({ to: "/app/leagues" })} className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+        <ArrowLeft className="size-4" /> Leagues
+      </button>
+
+      <header className="rounded-2xl bg-card p-5 mb-4">
+        <div className="flex items-start gap-3">
+          <div className="grid place-items-center size-12 rounded-xl bg-gradient-to-br from-primary to-rim text-primary-foreground">
+            <Trophy className="size-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-display text-2xl font-bold truncate">{data.league.name}</h1>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(data.league!.join_code);
+                toast.success("Code copied");
+              }}
+              className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Code <span className="font-mono font-bold text-primary">{data.league.join_code}</span>
+              <Copy className="size-3" />
+            </button>
+          </div>
+        </div>
+
+        <Link
+          to="/app/leagues/$id/log"
+          params={{ id }}
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
+        >
+          <Plus className="size-5" /> Log a game
+        </Link>
+      </header>
+
+      <Tabs defaultValue="leaderboard">
+        <TabsList className="grid grid-cols-3 w-full">
+          <TabsTrigger value="leaderboard">Players</TabsTrigger>
+          <TabsTrigger value="teams">Teams</TabsTrigger>
+          <TabsTrigger value="games">Games</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leaderboard">
+          <PlayerLeaderboard rows={leaderboard} />
+        </TabsContent>
+        <TabsContent value="teams">
+          <TeamLeaderboard rows={teams} />
+        </TabsContent>
+        <TabsContent value="games">
+          <GamesList games={data.games} />
+        </TabsContent>
+      </Tabs>
+    </main>
+  );
+}
+
+function PlayerLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard> }) {
+  const [sort, setSort] = useState<"points" | "rebounds" | "assists" | "wins">("points");
+  const sorted = [...rows].sort((a, b) => (b[sort] as number) - (a[sort] as number));
+
+  if (rows.length === 0) {
+    return <Empty msg="No stats yet — log your first game." />;
+  }
+
+  return (
+    <div>
+      <div className="flex gap-1 my-3 text-xs">
+        {(["points", "rebounds", "assists", "wins"] as const).map((s) => (
+          <button key={s} onClick={() => setSort(s)}
+            className={`px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold ${sort === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+            {s}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-2">
+        {sorted.map((r, i) => (
+          <div key={r.user_id} className="flex items-center gap-3 rounded-xl bg-card p-3">
+            <div className="text-display text-2xl font-bold text-muted-foreground w-7 text-center">{i + 1}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold truncate">@{r.username}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {r.games}G · {r.wins}-{r.losses} · {r.points}p / {r.rebounds}r / {r.assists}a
+              </div>
+            </div>
+            <div className="text-display text-2xl font-bold text-primary">{r[sort]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TeamLeaderboard({ rows }: { rows: ReturnType<typeof buildTeamRecords> }) {
+  if (rows.length === 0) return <Empty msg="No team records yet." />;
+  return (
+    <div className="space-y-2 mt-3">
+      {rows.map((t) => (
+        <div key={t.members.join(",")} className="rounded-xl bg-card p-3">
+          <div className="flex items-baseline justify-between">
+            <div className="font-semibold truncate">{t.usernames.map((u) => "@" + u).join(" + ")}</div>
+            <div className="text-display text-xl font-bold text-primary shrink-0 ml-2">{t.wins}-{t.losses}</div>
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-1">
+            {t.games}G · {t.pointsFor} pts for · {t.pointsAgainst} pts against
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GamesList({ games }: { games: ReturnType<typeof buildLeaderboard> extends never ? never : Awaited<ReturnType<typeof fetchLeagueData>>["games"] }) {
+  if (games.length === 0) return <Empty msg="No games logged yet." />;
+  return (
+    <div className="space-y-2 mt-3">
+      {games.map((g) => {
+        const aWin = g.team_a_score > g.team_b_score;
+        return (
+          <div key={g.id} className="rounded-xl bg-card p-3">
+            <div className="flex items-center justify-between">
+              <span className={`text-display text-xl font-bold ${aWin ? "text-primary" : "text-muted-foreground"}`}>
+                Team A · {g.team_a_score}
+              </span>
+              <span className="text-xs text-muted-foreground">vs</span>
+              <span className={`text-display text-xl font-bold ${!aWin ? "text-primary" : "text-muted-foreground"}`}>
+                {g.team_b_score} · Team B
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">
+              {new Date(g.played_at).toLocaleDateString()} {g.location ? `· ${g.location}` : ""}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Empty({ msg }: { msg: string }) {
+  return <div className="rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground mt-3">{msg}</div>;
+}
