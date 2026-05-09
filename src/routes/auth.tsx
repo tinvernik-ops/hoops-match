@@ -120,6 +120,18 @@ function AuthPage() {
                 <Input id="phone" type="tel" autoComplete="tel" required maxLength={20}
                   value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="vertical">Vertical (in) <span className="text-muted-foreground font-normal">opt.</span></Label>
+                  <Input id="vertical" type="number" min={4} max={60} placeholder="e.g. 28"
+                    value={form.vertical_cm} onChange={(e) => setForm({ ...form, vertical_cm: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="weight">Weight (kg) <span className="text-muted-foreground font-normal">opt.</span></Label>
+                  <Input id="weight" type="number" min={30} max={250} placeholder="e.g. 80"
+                    value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} />
+                </div>
+              </div>
             </>
           )}
           <div>
