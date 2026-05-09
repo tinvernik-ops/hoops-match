@@ -1,0 +1,220 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { distanceKm } from "@/lib/players";
+
+export const Route = createFileRoute("/app/player/$id")({
+  component: PlayerPage,
+});
+
+function PlayerPage() {
+  const { id } = Route.useParams();
+  const { user } = useAuth();
+  const nav = useNavigate();
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["player", id, user?.id],
+    queryFn: async () => {
+      const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+        supabase.from("ratings").select("offense,defense").eq("ratee_id", id),
+        supabase.from("ratings").select("offense,defense").eq("rater_id", user!.id).eq("ratee_id", id).maybeSingle(),
+        supabase.from("profiles").select("lat,lng").eq("id", user!.id).maybeSingle(),
+      ]);
+      if (pErr) throw pErr;
+      if (rErr) throw rErr;
+      const n = ratings?.length ?? 0;
+      const o = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
+      const d = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
+      const dist = profile?.lat != null && profile?.lng != null && me?.lat != null && me?.lng != null
+        ? distanceKm({ lat: me.lat, lng: me.lng }, { lat: profile.lat, lng: profile.lng })
+        : null;
+      return { profile, offense: o, defense: d, count: n, myRating: mine, distance: dist };
+    },
+    enabled: !!user,
+  });
+
+  if (isLoading || !data) return <div className="p-6 text-muted-foreground">Loading…</div>;
+  if (!data.profile) return <div className="p-6">Player not found.</div>;
+
+  const p = data.profile;
+
+  return (
+    <main className="mx-auto w-full max-w-md px-4 pt-4">
+      <button onClick={() => nav({ to: "/app" })} className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+        <ArrowLeft className="size-4" /> Back
+      </button>
+
+      <div className="rounded-3xl bg-card p-6 text-center">
+        <div className="mx-auto grid place-items-center size-24 rounded-full bg-gradient-to-br from-primary to-rim text-primary-foreground text-display text-4xl font-bold">
+          {p.username.slice(0, 1).toUpperCase()}
+        </div>
+        <h1 className="text-display text-3xl font-bold mt-3">@{p.username}</h1>
+        <div className="text-xs text-muted-foreground flex items-center justify-center gap-2 mt-1">
+          <MapPin className="size-3" />
+          {data.distance != null
+            ? data.distance < 1 ? `${Math.round(data.distance * 1000)}m away` : `${data.distance.toFixed(1)}km away`
+            : "Location unknown"}
+          {p.height_cm != null && <span>· {p.height_cm}cm</span>}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mt-6">
+          <StatBlock label="Offense" value={data.offense} />
+          <StatBlock label="Defense" value={data.defense} />
+        </div>
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground mt-3">
+          {data.count} {data.count === 1 ? "rating" : "ratings"}
+        </p>
+
+        <div className="mt-6 space-y-2">
+          <CallUpButton toId={p.id} toName={p.username} />
+          <RateDialog
+            toId={p.id}
+            initial={data.myRating ?? null}
+            onSaved={() => refetch()}
+          />
+        </div>
+      </div>
+
+      <Link to="/app" className="block text-center text-xs text-muted-foreground mt-6 underline">
+        Back to court
+      </Link>
+    </main>
+  );
+}
+
+function StatBlock({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded-2xl bg-secondary py-4">
+      <div className="text-display text-5xl font-bold text-primary leading-none">{value ?? "—"}</div>
+      <div className="text-[11px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
+
+function CallUpButton({ toId, toName }: { toId: string; toName: string }) {
+  const { user } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState("Yo, run it? 🏀");
+
+  async function send() {
+    if (!user) return;
+    setBusy(true);
+    const { error } = await supabase.from("invites").insert({
+      from_id: user.id,
+      to_id: toId,
+      message: msg.trim().slice(0, 280) || null,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setOpen(false);
+    toast.success(`Invite sent to @${toName}`);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="lg" className="w-full h-14 text-base font-bold">
+          🏀 Call up for a hoop sesh
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Invite @{toName}</DialogTitle>
+        </DialogHeader>
+        <Textarea
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          maxLength={280}
+          placeholder="Court, time, vibe…"
+          rows={3}
+        />
+        <DialogFooter>
+          <Button onClick={send} disabled={busy} className="w-full font-bold">
+            {busy ? <Loader2 className="animate-spin" /> : "Send invite"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RateDialog({
+  toId,
+  initial,
+  onSaved,
+}: {
+  toId: string;
+  initial: { offense: number; defense: number } | null;
+  onSaved: () => void;
+}) {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [off, setOff] = useState(initial?.offense ?? 75);
+  const [def, setDef] = useState(initial?.defense ?? 75);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    if (!user) return;
+    setBusy(true);
+    const { error } = await supabase
+      .from("ratings")
+      .upsert({ rater_id: user.id, ratee_id: toId, offense: off, defense: def }, { onConflict: "rater_id,ratee_id" });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Rating saved");
+    setOpen(false);
+    onSaved();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="lg" className="w-full">
+          {initial ? "Update rating" : "Rate this player"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>How they hoop</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 py-2">
+          <RatingSlider label="Offense" value={off} onChange={setOff} />
+          <RatingSlider label="Defense" value={def} onChange={setDef} />
+        </div>
+        <DialogFooter>
+          <Button onClick={save} disabled={busy} className="w-full font-bold">
+            {busy ? <Loader2 className="animate-spin" /> : "Save rating"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RatingSlider({ label, value, onChange }: { label: string; value: number; onChange: (n: number) => void }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="text-display text-3xl font-bold text-primary">{value}</span>
+      </div>
+      <Slider value={[value]} min={0} max={99} step={1} onValueChange={(v) => onChange(v[0])} />
+    </div>
+  );
+}
