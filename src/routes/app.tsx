@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Home, User } from "lucide-react";
+import { Home, User, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -22,6 +22,7 @@ function AppLayout() {
 
   const tabs = [
     { to: "/app", label: "Court", icon: Home, exact: true },
+    { to: "/app/leagues", label: "Leagues", icon: Trophy, exact: false },
     { to: "/app/profile", label: "Profile", icon: User, exact: false },
   ];
 
@@ -29,7 +30,7 @@ function AppLayout() {
     <div className="min-h-screen flex flex-col pb-20">
       <Outlet />
       <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-md grid grid-cols-2">
+        <div className="mx-auto max-w-md grid grid-cols-3">
           {tabs.map((t) => {
             const active = t.exact ? loc.pathname === t.to : loc.pathname.startsWith(t.to);
             return (
