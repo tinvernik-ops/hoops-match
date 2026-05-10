@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppDrillsRouteImport } from './routes/app.drills'
 import { Route as AppLeaguesIndexRouteImport } from './routes/app.leagues.index'
 import { Route as AppPlayerIdRouteImport } from './routes/app.player.$id'
 import { Route as AppLeaguesIdRouteImport } from './routes/app.leagues.$id'
@@ -50,6 +51,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDrillsRoute = AppDrillsRouteImport.update({
+  id: '/drills',
+  path: '/drills',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeaguesIndexRoute = AppLeaguesIndexRouteImport.update({
   id: '/leagues/',
   path: '/leagues/',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/app/drills'
     | '/app/profile'
     | '/app/settings'
     | '/app/'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/app/drills'
     | '/app/profile'
     | '/app/settings'
     | '/app'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/app/drills'
     | '/app/profile'
     | '/app/settings'
     | '/app/'
@@ -195,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/drills': {
+      id: '/app/drills'
+      path: '/drills'
+      fullPath: '/app/drills'
+      preLoaderRoute: typeof AppDrillsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leagues/': {
       id: '/app/leagues/'
       path: '/leagues'
@@ -239,6 +258,7 @@ const AppLeaguesIdRouteWithChildren = AppLeaguesIdRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppDrillsRoute: typeof AppDrillsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -248,6 +268,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppDrillsRoute: AppDrillsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
@@ -266,3 +287,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
