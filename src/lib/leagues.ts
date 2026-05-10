@@ -10,6 +10,8 @@ export type LeagueRow = {
 
 export type Member = { user_id: string; username: string };
 
+export type GameType = "1v1" | "2v2" | "3v3" | "4v4" | "5v5" | "koth";
+
 export type GameRow = {
   id: string;
   league_id: string;
@@ -19,6 +21,7 @@ export type GameRow = {
   team_b_score: number;
   notes: string | null;
   created_by: string;
+  game_type: GameType;
 };
 
 export type GamePlayerRow = {
