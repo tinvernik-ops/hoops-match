@@ -196,8 +196,11 @@ function GamesList({ games }: { games: ReturnType<typeof buildLeaderboard> exten
                 {g.team_b_score} · Team B
               </span>
             </div>
-            <div className="text-[11px] text-muted-foreground mt-1">
-              {new Date(g.played_at).toLocaleDateString()} {g.location ? `· ${g.location}` : ""}
+            <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-2">
+              <span className="rounded-full bg-secondary px-2 py-0.5 font-bold uppercase tracking-wider">
+                {g.game_type === "koth" ? "KOTH" : g.game_type}
+              </span>
+              <span>{new Date(g.played_at).toLocaleDateString()} {g.location ? `· ${g.location}` : ""}</span>
             </div>
           </div>
         );
