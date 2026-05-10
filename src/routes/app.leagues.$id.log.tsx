@@ -30,6 +30,7 @@ function LogGamePage() {
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [location, setLocation] = useState("");
+  const [gameType, setGameType] = useState<GameType>("5v5");
   const [stats, setStats] = useState<Record<string, StatLine>>({});
 
   const { data } = useQuery({
