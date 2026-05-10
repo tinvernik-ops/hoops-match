@@ -119,6 +119,19 @@ function LogGamePage() {
           <ScoreInput label="Team B" value={scoreB} onChange={setScoreB} highlight={scoreB > scoreA} />
         </div>
         <div className="mt-3">
+          <Label>Game type</Label>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {GAME_TYPES.map((g) => (
+              <button type="button" key={g} onClick={() => setGameType(g)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  gameType === g ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                }`}>
+                {GAME_TYPE_LABELS[g]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3">
           <Label htmlFor="loc">Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
           <Input id="loc" maxLength={80} value={location} onChange={(e) => setLocation(e.target.value)}
             placeholder="Rucker Park" />
