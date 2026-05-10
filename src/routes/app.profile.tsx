@@ -149,10 +149,30 @@ function ProfilePage() {
               placeholder="opt." />
           </div>
         </div>
+        <div>
+          <Label htmlFor="playstyle">Playstyle <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Textarea id="playstyle" maxLength={120} rows={2} value={form.playstyle}
+            onChange={(e) => setForm({ ...form, playstyle: e.target.value })}
+            placeholder="Slasher, lockdown D, spot-up shooter…" />
+        </div>
+        <div>
+          <Label>Preferred game type <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Select value={form.preferred_game_type || undefined}
+            onValueChange={(v) => setForm({ ...form, preferred_game_type: v as typeof GAME_TYPES[number] })}>
+            <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
+            <SelectContent>
+              {GAME_TYPES.map((g) => <SelectItem key={g} value={g}>{GAME_TYPE_LABELS[g]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <Button type="submit" disabled={busy} className="w-full h-12 font-bold" size="lg">
           {busy ? <Loader2 className="animate-spin" /> : "Save"}
         </Button>
       </form>
+
+      <Link to="/app/drills" className="mt-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-4 font-semibold">
+        <Target className="size-5" /> Shooting drills
+      </Link>
 
       <button
         onClick={signOut}
