@@ -83,6 +83,7 @@ function LogGamePage() {
         team_a_score: scoreA,
         team_b_score: scoreB,
         location: location.trim() || null,
+        game_type: gameType,
       })
       .select()
       .single();
