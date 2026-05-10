@@ -69,6 +69,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          game_type: Database["public"]["Enums"]["game_type"]
           id: string
           league_id: string
           location: string | null
@@ -80,6 +81,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          game_type?: Database["public"]["Enums"]["game_type"]
           id?: string
           league_id: string
           location?: string | null
@@ -91,6 +93,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          game_type?: Database["public"]["Enums"]["game_type"]
           id?: string
           league_id?: string
           location?: string | null
@@ -232,6 +235,8 @@ export type Database = {
           lng: number | null
           location_updated_at: string | null
           phone: string
+          playstyle: string | null
+          preferred_game_type: string | null
           updated_at: string
           username: string
           vertical_cm: number | null
@@ -245,6 +250,8 @@ export type Database = {
           lng?: number | null
           location_updated_at?: string | null
           phone: string
+          playstyle?: string | null
+          preferred_game_type?: string | null
           updated_at?: string
           username: string
           vertical_cm?: number | null
@@ -258,6 +265,8 @@ export type Database = {
           lng?: number | null
           location_updated_at?: string | null
           phone?: string
+          playstyle?: string | null
+          preferred_game_type?: string | null
           updated_at?: string
           username?: string
           vertical_cm?: number | null
@@ -307,6 +316,39 @@ export type Database = {
           },
         ]
       }
+      shooting_drills: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          makes: number
+          user_id: string
+          x: number
+          y: number
+          zone: string
+        }
+        Insert: {
+          attempts: number
+          created_at?: string
+          id?: string
+          makes: number
+          user_id: string
+          x: number
+          y: number
+          zone: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          makes?: number
+          user_id?: string
+          x?: number
+          y?: number
+          zone?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -318,6 +360,7 @@ export type Database = {
       }
     }
     Enums: {
+      game_type: "1v1" | "2v2" | "3v3" | "4v4" | "5v5" | "koth"
       invite_status: "pending" | "accepted" | "declined" | "cancelled"
       team_side: "A" | "B"
     }
@@ -447,6 +490,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      game_type: ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"],
       invite_status: ["pending", "accepted", "declined", "cancelled"],
       team_side: ["A", "B"],
     },

@@ -7,8 +7,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, LogOut, Settings } from "lucide-react";
+import { Loader2, LogOut, Settings, Target } from "lucide-react";
+
+const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
+const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
+  "1v1": "1v1", "2v2": "2v2", "3v3": "3v3", "4v4": "4v4", "5v5": "5v5", koth: "King of the Hill",
+};
 
 export const Route = createFileRoute("/app/profile")({
   component: ProfilePage,
@@ -20,13 +27,18 @@ const schema = z.object({
   height_cm: z.number().int().min(120).max(250),
   vertical_cm: z.number().int().min(10).max(150).nullable(),
   weight_kg: z.number().int().min(30).max(250).nullable(),
+  playstyle: z.string().trim().max(120).nullable(),
+  preferred_game_type: z.enum(GAME_TYPES).nullable(),
 });
 
 function ProfilePage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ username: "", phone: "", height_cm: "", vertical_cm: "", weight_kg: "" });
+  const [form, setForm] = useState({
+    username: "", phone: "", height_cm: "", vertical_cm: "", weight_kg: "",
+    playstyle: "", preferred_game_type: "" as "" | typeof GAME_TYPES[number],
+  });
 
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -46,6 +58,8 @@ function ProfilePage() {
         height_cm: profile.height_cm?.toString() ?? "",
         vertical_cm: profile.vertical_cm?.toString() ?? "",
         weight_kg: profile.weight_kg?.toString() ?? "",
+        playstyle: (profile as { playstyle?: string | null }).playstyle ?? "",
+        preferred_game_type: ((profile as { preferred_game_type?: typeof GAME_TYPES[number] | null }).preferred_game_type ?? "") as "" | typeof GAME_TYPES[number],
       });
     }
   }, [profile]);
@@ -60,9 +74,16 @@ function ProfilePage() {
         height_cm: Number(form.height_cm),
         vertical_cm: form.vertical_cm ? Number(form.vertical_cm) : null,
         weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
+        playstyle: form.playstyle.trim() || null,
+        preferred_game_type: form.preferred_game_type || null,
       });
       const { error } = await supabase.from("profiles").update(v).eq("id", user!.id);
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505") {
+          throw new Error("Username or phone already in use");
+        }
+        throw error;
+      }
       toast.success("Profile saved");
       refetch();
     } catch (err: unknown) {
@@ -128,10 +149,30 @@ function ProfilePage() {
               placeholder="opt." />
           </div>
         </div>
+        <div>
+          <Label htmlFor="playstyle">Playstyle <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Textarea id="playstyle" maxLength={120} rows={2} value={form.playstyle}
+            onChange={(e) => setForm({ ...form, playstyle: e.target.value })}
+            placeholder="Slasher, lockdown D, spot-up shooter…" />
+        </div>
+        <div>
+          <Label>Preferred game type <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Select value={form.preferred_game_type || undefined}
+            onValueChange={(v) => setForm({ ...form, preferred_game_type: v as typeof GAME_TYPES[number] })}>
+            <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
+            <SelectContent>
+              {GAME_TYPES.map((g) => <SelectItem key={g} value={g}>{GAME_TYPE_LABELS[g]}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <Button type="submit" disabled={busy} className="w-full h-12 font-bold" size="lg">
           {busy ? <Loader2 className="animate-spin" /> : "Save"}
         </Button>
       </form>
+
+      <Link to="/app/drills" className="mt-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-4 font-semibold">
+        <Target className="size-5" /> Shooting drills
+      </Link>
 
       <button
         onClick={signOut}

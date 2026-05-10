@@ -9,6 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
+import type { GameType } from "@/lib/leagues";
+
+const GAME_TYPES: GameType[] = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"];
+const GAME_TYPE_LABELS: Record<GameType, string> = {
+  "1v1": "1v1", "2v2": "2v2", "3v3": "3v3", "4v4": "4v4", "5v5": "5v5", koth: "KOTH",
+};
 
 export const Route = createFileRoute("/app/leagues/$id/log")({
   component: LogGamePage,
@@ -24,6 +30,7 @@ function LogGamePage() {
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
   const [location, setLocation] = useState("");
+  const [gameType, setGameType] = useState<GameType>("5v5");
   const [stats, setStats] = useState<Record<string, StatLine>>({});
 
   const { data } = useQuery({
@@ -76,6 +83,7 @@ function LogGamePage() {
         team_a_score: scoreA,
         team_b_score: scoreB,
         location: location.trim() || null,
+        game_type: gameType,
       })
       .select()
       .single();
@@ -109,6 +117,19 @@ function LogGamePage() {
         <div className="grid grid-cols-2 gap-3">
           <ScoreInput label="Team A" value={scoreA} onChange={setScoreA} highlight={scoreA > scoreB} />
           <ScoreInput label="Team B" value={scoreB} onChange={setScoreB} highlight={scoreB > scoreA} />
+        </div>
+        <div className="mt-3">
+          <Label>Game type</Label>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {GAME_TYPES.map((g) => (
+              <button type="button" key={g} onClick={() => setGameType(g)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  gameType === g ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                }`}>
+                {GAME_TYPE_LABELS[g]}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="mt-3">
           <Label htmlFor="loc">Location <span className="text-muted-foreground font-normal">(optional)</span></Label>
