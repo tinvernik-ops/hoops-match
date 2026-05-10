@@ -69,8 +69,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "Hoops — Find hoopers near you" },
       { name: "twitter:description", content: "Hoops is the pickup basketball app. Find hoopers near you, see offensive and defensive ratings, and call up a sesh." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2187478a-acf0-47ec-91dd-03c07d19f3f4/id-preview-ca3c2160--740886c7-5e38-4bde-89ba-5533e780e0bd.lovable.app-1778392983309.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2187478a-acf0-47ec-91dd-03c07d19f3f4/id-preview-ca3c2160--740886c7-5e38-4bde-89ba-5533e780e0bd.lovable.app-1778392983309.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0aa3039b-03dd-475a-a0a9-e2681955f739" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/0aa3039b-03dd-475a-a0a9-e2681955f739" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
