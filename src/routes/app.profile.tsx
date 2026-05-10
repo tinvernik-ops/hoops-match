@@ -27,13 +27,18 @@ const schema = z.object({
   height_cm: z.number().int().min(120).max(250),
   vertical_cm: z.number().int().min(10).max(150).nullable(),
   weight_kg: z.number().int().min(30).max(250).nullable(),
+  playstyle: z.string().trim().max(120).nullable(),
+  preferred_game_type: z.enum(GAME_TYPES).nullable(),
 });
 
 function ProfilePage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ username: "", phone: "", height_cm: "", vertical_cm: "", weight_kg: "" });
+  const [form, setForm] = useState({
+    username: "", phone: "", height_cm: "", vertical_cm: "", weight_kg: "",
+    playstyle: "", preferred_game_type: "" as "" | typeof GAME_TYPES[number],
+  });
 
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -53,6 +58,8 @@ function ProfilePage() {
         height_cm: profile.height_cm?.toString() ?? "",
         vertical_cm: profile.vertical_cm?.toString() ?? "",
         weight_kg: profile.weight_kg?.toString() ?? "",
+        playstyle: (profile as { playstyle?: string | null }).playstyle ?? "",
+        preferred_game_type: ((profile as { preferred_game_type?: typeof GAME_TYPES[number] | null }).preferred_game_type ?? "") as "" | typeof GAME_TYPES[number],
       });
     }
   }, [profile]);
@@ -67,9 +74,16 @@ function ProfilePage() {
         height_cm: Number(form.height_cm),
         vertical_cm: form.vertical_cm ? Number(form.vertical_cm) : null,
         weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
+        playstyle: form.playstyle.trim() || null,
+        preferred_game_type: form.preferred_game_type || null,
       });
       const { error } = await supabase.from("profiles").update(v).eq("id", user!.id);
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505") {
+          throw new Error("Username or phone already in use");
+        }
+        throw error;
+      }
       toast.success("Profile saved");
       refetch();
     } catch (err: unknown) {
