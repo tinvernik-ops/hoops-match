@@ -9,6 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
+import type { GameType } from "@/lib/leagues";
+
+const GAME_TYPES: GameType[] = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"];
+const GAME_TYPE_LABELS: Record<GameType, string> = {
+  "1v1": "1v1", "2v2": "2v2", "3v3": "3v3", "4v4": "4v4", "5v5": "5v5", koth: "KOTH",
+};
 
 export const Route = createFileRoute("/app/leagues/$id/log")({
   component: LogGamePage,
