@@ -125,7 +125,7 @@ function LeagueDetail() {
 }
 
 function PlayerLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard> }) {
-  const [sort, setSort] = useState<"points" | "rebounds" | "assists" | "wins">("points");
+  const [sort, setSort] = useState<"points" | "rebounds" | "assists" | "steals" | "blocks" | "wins">("points");
   const sorted = [...rows].sort((a, b) => (b[sort] as number) - (a[sort] as number));
 
   if (rows.length === 0) {
@@ -134,10 +134,10 @@ function PlayerLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard>
 
   return (
     <div>
-      <div className="flex gap-1 my-3 text-xs">
-        {(["points", "rebounds", "assists", "wins"] as const).map((s) => (
+      <div className="flex gap-1 my-3 text-xs overflow-x-auto -mx-1 px-1">
+        {(["points", "rebounds", "assists", "steals", "blocks", "wins"] as const).map((s) => (
           <button key={s} onClick={() => setSort(s)}
-            className={`px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold ${sort === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+            className={`shrink-0 px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold ${sort === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
             {s}
           </button>
         ))}
