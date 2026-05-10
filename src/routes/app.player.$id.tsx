@@ -66,6 +66,21 @@ function PlayerPage() {
           {p.height_cm != null && <span>· {p.height_cm}cm</span>}
         </div>
 
+        {(p.playstyle || p.preferred_game_type) && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            {p.preferred_game_type && (
+              <span className="rounded-full bg-primary/15 text-primary font-bold px-3 py-1 uppercase tracking-wider">
+                {p.preferred_game_type === "koth" ? "King of the Hill" : p.preferred_game_type}
+              </span>
+            )}
+            {p.playstyle && (
+              <span className="rounded-full bg-secondary px-3 py-1 text-muted-foreground italic">
+                "{p.playstyle}"
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3 mt-6">
           <StatBlock label="Offense" value={data.offense} />
           <StatBlock label="Defense" value={data.defense} />
