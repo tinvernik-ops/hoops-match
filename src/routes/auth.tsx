@@ -45,6 +45,20 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const v = signupSchema.parse(form);
+
+        // Pre-check duplicates (username + phone). Email duplicates are caught by auth.signUp.
+        const { data: dupes, error: dupErr } = await supabase
+          .from("profiles")
+          .select("username, phone")
+          .or(`username.ilike.${v.username},phone.eq.${v.phone}`);
+        if (dupErr) throw dupErr;
+        if (dupes?.some((d) => d.username.toLowerCase() === v.username.toLowerCase())) {
+          throw new Error("Username already taken");
+        }
+        if (dupes?.some((d) => d.phone === v.phone)) {
+          throw new Error("Phone number already in use");
+        }
+
         const { data: signupData, error } = await supabase.auth.signUp({
           email: v.email,
           password: v.password,
