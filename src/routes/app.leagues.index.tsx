@@ -77,8 +77,8 @@ function LeaguesIndex() {
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
               <div key={inv.id} className="rounded-2xl bg-card p-4 border border-primary/30">
-                <div className="font-semibold truncate">{inv.leagues?.name ?? "League"}</div>
-                <div className="text-xs text-muted-foreground mb-3">from @{inv.profiles?.username ?? "someone"}</div>
+                <div className="font-semibold truncate">{inv.league_name}</div>
+                <div className="text-xs text-muted-foreground mb-3">from @{inv.from_username}</div>
                 <div className="flex gap-2">
                   <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>Accept</Button>
                   <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>Decline</Button>
