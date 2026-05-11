@@ -74,13 +74,20 @@ function LeagueDetail() {
           </div>
         </div>
 
-        <Link
-          to="/app/leagues/$id/log"
-          params={{ id }}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
-        >
-          <Plus className="size-5" /> Log a game
-        </Link>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Link
+            to="/app/leagues/$id/log"
+            params={{ id }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
+          >
+            <Plus className="size-5" /> Log game
+          </Link>
+          {data.league.owner_id === user?.id ? (
+            <InviteDialog leagueId={id} memberIds={data.members.map((m) => m.user_id)} />
+          ) : (
+            <div />
+          )}
+        </div>
       </header>
 
       <div className="mb-3">
