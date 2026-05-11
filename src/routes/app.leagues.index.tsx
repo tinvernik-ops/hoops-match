@@ -23,6 +23,31 @@ function LeaguesIndex() {
     enabled: !!user,
   });
 
+  const { data: pendingInvites = [], refetch: refetchInvites } = useQuery({
+    queryKey: ["league-invites", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("league_invites")
+        .select("id, league_id, from_id, leagues!inner(name), profiles:from_id(username)")
+        .eq("to_id", user!.id)
+        .eq("status", "pending");
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; league_id: string; from_id: string; leagues: { name: string } | null; profiles: { username: string } | null }>;
+    },
+    enabled: !!user,
+  });
+
+  async function respond(inviteId: string, accept: boolean) {
+    const { error } = await supabase
+      .from("league_invites")
+      .update({ status: accept ? "accepted" : "declined" })
+      .eq("id", inviteId);
+    if (error) { toast.error(error.message); return; }
+    toast.success(accept ? "Joined league" : "Declined");
+    refetchInvites();
+    refetch();
+  }
+
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-6">
       <header className="flex items-center justify-between mb-5">
@@ -31,6 +56,24 @@ function LeaguesIndex() {
           <p className="text-xs text-muted-foreground mt-1">Run with your crew. Track every dub.</p>
         </div>
       </header>
+
+      {pendingInvites.length > 0 && (
+        <section className="mb-5">
+          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Invites</h2>
+          <div className="space-y-2">
+            {pendingInvites.map((inv) => (
+              <div key={inv.id} className="rounded-2xl bg-card p-4 border border-primary/30">
+                <div className="font-semibold truncate">{inv.leagues?.name ?? "League"}</div>
+                <div className="text-xs text-muted-foreground mb-3">from @{inv.profiles?.username ?? "someone"}</div>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>Accept</Button>
+                  <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         <CreateLeagueDialog onCreated={() => refetch()} />
