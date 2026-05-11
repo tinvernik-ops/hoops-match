@@ -92,11 +92,17 @@ function PlayerPage() {
 
         <div className="mt-6 space-y-2">
           <CallUpButton toId={p.id} toName={p.username} />
-          <RateDialog
-            toId={p.id}
-            initial={data.myRating ?? null}
-            onSaved={() => refetch()}
-          />
+          {data.canRate ? (
+            <RateDialog
+              toId={p.id}
+              initial={data.myRating ?? null}
+              onSaved={() => refetch()}
+            />
+          ) : (
+            <div className="rounded-xl bg-secondary p-3 text-xs text-muted-foreground text-center">
+              You can rate @{p.username} after you play together (logged league game) or once they accept your hoop sesh invite.
+            </div>
+          )}
         </div>
       </div>
 
