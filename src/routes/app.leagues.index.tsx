@@ -26,13 +26,27 @@ function LeaguesIndex() {
   const { data: pendingInvites = [], refetch: refetchInvites } = useQuery({
     queryKey: ["league-invites", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: invites, error } = await supabase
         .from("league_invites")
-        .select("id, league_id, from_id, leagues!inner(name), profiles:from_id(username)")
+        .select("id, league_id, from_id")
         .eq("to_id", user!.id)
         .eq("status", "pending");
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; league_id: string; from_id: string; leagues: { name: string } | null; profiles: { username: string } | null }>;
+      const list = invites ?? [];
+      if (list.length === 0) return [] as Array<{ id: string; league_id: string; from_id: string; league_name: string; from_username: string }>;
+      const leagueIds = [...new Set(list.map((i) => i.league_id))];
+      const fromIds = [...new Set(list.map((i) => i.from_id))];
+      const [{ data: lgs }, { data: profs }] = await Promise.all([
+        supabase.from("leagues").select("id, name").in("id", leagueIds),
+        supabase.from("profiles").select("id, username").in("id", fromIds),
+      ]);
+      const lMap = new Map((lgs ?? []).map((l) => [l.id, l.name]));
+      const pMap = new Map((profs ?? []).map((p) => [p.id, p.username]));
+      return list.map((i) => ({
+        ...i,
+        league_name: lMap.get(i.league_id) ?? "League",
+        from_username: pMap.get(i.from_id) ?? "someone",
+      }));
     },
     enabled: !!user,
   });
