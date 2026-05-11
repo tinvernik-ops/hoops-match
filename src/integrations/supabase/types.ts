@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      courts: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+        }
+        Relationships: []
+      }
       game_players: {
         Row: {
           assists: number
@@ -160,6 +187,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      league_invites: {
+        Row: {
+          created_at: string
+          from_id: string
+          id: string
+          league_id: string
+          status: Database["public"]["Enums"]["league_invite_status"]
+          to_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_id: string
+          id?: string
+          league_id: string
+          status?: Database["public"]["Enums"]["league_invite_status"]
+          to_id: string
+        }
+        Update: {
+          created_at?: string
+          from_id?: string
+          id?: string
+          league_id?: string
+          status?: Database["public"]["Enums"]["league_invite_status"]
+          to_id?: string
+        }
+        Relationships: []
       }
       league_members: {
         Row: {
@@ -354,7 +408,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_rate: { Args: { _ratee: string; _rater: string }; Returns: boolean }
       is_league_member: {
+        Args: { _league_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_league_owner: {
         Args: { _league_id: string; _user_id: string }
         Returns: boolean
       }
@@ -362,6 +421,7 @@ export type Database = {
     Enums: {
       game_type: "1v1" | "2v2" | "3v3" | "4v4" | "5v5" | "koth"
       invite_status: "pending" | "accepted" | "declined" | "cancelled"
+      league_invite_status: "pending" | "accepted" | "declined"
       team_side: "A" | "B"
     }
     CompositeTypes: {
@@ -492,6 +552,7 @@ export const Constants = {
     Enums: {
       game_type: ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"],
       invite_status: ["pending", "accepted", "declined", "cancelled"],
+      league_invite_status: ["pending", "accepted", "declined"],
       team_side: ["A", "B"],
     },
   },

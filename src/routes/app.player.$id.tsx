@@ -23,11 +23,12 @@ function PlayerPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["player", id, user?.id],
     queryFn: async () => {
-      const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }] = await Promise.all([
+      const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }, { data: canRate }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", id),
         supabase.from("ratings").select("offense,defense").eq("rater_id", user!.id).eq("ratee_id", id).maybeSingle(),
         supabase.from("profiles").select("lat,lng").eq("id", user!.id).maybeSingle(),
+        supabase.rpc("can_rate", { _rater: user!.id, _ratee: id }),
       ]);
       if (pErr) throw pErr;
       if (rErr) throw rErr;
@@ -37,7 +38,7 @@ function PlayerPage() {
       const dist = profile?.lat != null && profile?.lng != null && me?.lat != null && me?.lng != null
         ? distanceKm({ lat: me.lat, lng: me.lng }, { lat: profile.lat, lng: profile.lng })
         : null;
-      return { profile, offense: o, defense: d, count: n, myRating: mine, distance: dist };
+      return { profile, offense: o, defense: d, count: n, myRating: mine, distance: dist, canRate: !!canRate };
     },
     enabled: !!user,
   });
@@ -91,11 +92,17 @@ function PlayerPage() {
 
         <div className="mt-6 space-y-2">
           <CallUpButton toId={p.id} toName={p.username} />
-          <RateDialog
-            toId={p.id}
-            initial={data.myRating ?? null}
-            onSaved={() => refetch()}
-          />
+          {data.canRate ? (
+            <RateDialog
+              toId={p.id}
+              initial={data.myRating ?? null}
+              onSaved={() => refetch()}
+            />
+          ) : (
+            <div className="rounded-xl bg-secondary p-3 text-xs text-muted-foreground text-center">
+              You can rate @{p.username} after you play together (logged league game) or once they accept your hoop sesh invite.
+            </div>
+          )}
         </div>
       </div>
 

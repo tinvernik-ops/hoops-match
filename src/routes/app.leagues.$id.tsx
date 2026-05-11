@@ -3,8 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchLeagueData, buildLeaderboard, buildTeamRecords, type GameType } from "@/lib/leagues";
+import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Copy, Trophy } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Plus, Copy, Trophy, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/leagues/$id")({
@@ -70,13 +74,20 @@ function LeagueDetail() {
           </div>
         </div>
 
-        <Link
-          to="/app/leagues/$id/log"
-          params={{ id }}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
-        >
-          <Plus className="size-5" /> Log a game
-        </Link>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Link
+            to="/app/leagues/$id/log"
+            params={{ id }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
+          >
+            <Plus className="size-5" /> Log game
+          </Link>
+          {data.league.owner_id === user?.id ? (
+            <InviteDialog leagueId={id} memberIds={data.members.map((m) => m.user_id)} />
+          ) : (
+            <div />
+          )}
+        </div>
       </header>
 
       <div className="mb-3">
@@ -211,4 +222,76 @@ function GamesList({ games }: { games: ReturnType<typeof buildLeaderboard> exten
 
 function Empty({ msg }: { msg: string }) {
   return <div className="rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground mt-3">{msg}</div>;
+}
+
+function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: string[] }) {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const { data: results = [], refetch } = useQuery({
+    queryKey: ["invite-search", leagueId, q],
+    queryFn: async () => {
+      const term = q.trim();
+      if (term.length < 2) return [] as Array<{ id: string; username: string }>;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username")
+        .ilike("username", `%${term}%`)
+        .limit(10);
+      if (error) throw error;
+      return (data ?? []).filter((p) => p.id !== user?.id && !memberIds.includes(p.id));
+    },
+    enabled: open,
+  });
+
+  async function invite(toId: string) {
+    if (!user) return;
+    setBusyId(toId);
+    const { error } = await supabase
+      .from("league_invites")
+      .insert({ league_id: leagueId, from_id: user.id, to_id: toId });
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message.includes("duplicate") ? "Already invited" : error.message);
+      return;
+    }
+    toast.success("Invite sent");
+    refetch();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" className="gap-2 font-bold">
+          <UserPlus className="size-5" /> Invite
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Invite players</DialogTitle></DialogHeader>
+        <Input placeholder="Search username…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="space-y-2 max-h-72 overflow-y-auto">
+          {q.trim().length < 2 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">Type at least 2 characters.</p>
+          ) : results.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No matching users.</p>
+          ) : (
+            results.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 rounded-xl bg-secondary p-3">
+                <div className="grid place-items-center size-9 rounded-full bg-primary text-primary-foreground font-bold">
+                  {r.username.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 font-semibold truncate">@{r.username}</div>
+                <Button size="sm" disabled={busyId === r.id} onClick={() => invite(r.id)}>
+                  {busyId === r.id ? <Loader2 className="size-4 animate-spin" /> : "Invite"}
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+        <DialogFooter />
+      </DialogContent>
+    </Dialog>
+  );
 }
