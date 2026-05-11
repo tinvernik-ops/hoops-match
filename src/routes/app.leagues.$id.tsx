@@ -223,3 +223,75 @@ function GamesList({ games }: { games: ReturnType<typeof buildLeaderboard> exten
 function Empty({ msg }: { msg: string }) {
   return <div className="rounded-2xl bg-card p-8 text-center text-sm text-muted-foreground mt-3">{msg}</div>;
 }
+
+function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: string[] }) {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const { data: results = [], refetch } = useQuery({
+    queryKey: ["invite-search", leagueId, q],
+    queryFn: async () => {
+      const term = q.trim();
+      if (term.length < 2) return [] as Array<{ id: string; username: string }>;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username")
+        .ilike("username", `%${term}%`)
+        .limit(10);
+      if (error) throw error;
+      return (data ?? []).filter((p) => p.id !== user?.id && !memberIds.includes(p.id));
+    },
+    enabled: open,
+  });
+
+  async function invite(toId: string) {
+    if (!user) return;
+    setBusyId(toId);
+    const { error } = await supabase
+      .from("league_invites")
+      .insert({ league_id: leagueId, from_id: user.id, to_id: toId });
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message.includes("duplicate") ? "Already invited" : error.message);
+      return;
+    }
+    toast.success("Invite sent");
+    refetch();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" className="gap-2 font-bold">
+          <UserPlus className="size-5" /> Invite
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Invite players</DialogTitle></DialogHeader>
+        <Input placeholder="Search username…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="space-y-2 max-h-72 overflow-y-auto">
+          {q.trim().length < 2 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">Type at least 2 characters.</p>
+          ) : results.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No matching users.</p>
+          ) : (
+            results.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 rounded-xl bg-secondary p-3">
+                <div className="grid place-items-center size-9 rounded-full bg-primary text-primary-foreground font-bold">
+                  {r.username.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 font-semibold truncate">@{r.username}</div>
+                <Button size="sm" disabled={busyId === r.id} onClick={() => invite(r.id)}>
+                  {busyId === r.id ? <Loader2 className="size-4 animate-spin" /> : "Invite"}
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+        <DialogFooter />
+      </DialogContent>
+    </Dialog>
+  );
+}
