@@ -131,16 +131,18 @@ function CallUpButton({ toId, toName }: { toId: string; toName: string }) {
   async function send() {
     if (!user) return;
     setBusy(true);
+    const message = msg.trim().slice(0, 280) || null;
     const { error } = await supabase.from("invites").insert({
       from_id: user.id,
       to_id: toId,
-      message: msg.trim().slice(0, 280) || null,
+      message,
     });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
+    sendPushTo({ toUserId: toId, title: "🏀 Hoop sesh invite", body: message ?? "Someone wants to run it.", url: "/app", tag: `invite-${user.id}` });
     setOpen(false);
     toast.success(`Invite sent to @${toName}`);
   }
