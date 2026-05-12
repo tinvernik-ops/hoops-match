@@ -257,6 +257,7 @@ function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: st
       toast.error(error.message.includes("duplicate") ? "Already invited" : error.message);
       return;
     }
+    sendPushTo({ toUserId: toId, title: "🏆 League invite", body: "You've been invited to a Hoops league.", url: "/app/leagues", tag: `league-${leagueId}` });
     toast.success("Invite sent");
     refetch();
   }
