@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { ensurePushSubscription } from "@/lib/push";
 import { Home, User, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -15,6 +16,10 @@ function AppLayout() {
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
   }, [user, loading, nav]);
+
+  useEffect(() => {
+    if (user) ensurePushSubscription(user.id).catch(() => {});
+  }, [user]);
 
   if (loading || !user) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
