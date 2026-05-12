@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Plus, Copy, Trophy, UserPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/app/leagues/$id")({
+export const Route = createFileRoute("/app/leagues/$id/")({
   component: LeagueDetail,
 });
 
