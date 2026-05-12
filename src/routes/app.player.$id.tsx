@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { distanceKm } from "@/lib/players";
+import { sendPushTo } from "@/lib/push";
 
 export const Route = createFileRoute("/app/player/$id")({
   component: PlayerPage,
@@ -131,16 +132,18 @@ function CallUpButton({ toId, toName }: { toId: string; toName: string }) {
   async function send() {
     if (!user) return;
     setBusy(true);
+    const message = msg.trim().slice(0, 280) || null;
     const { error } = await supabase.from("invites").insert({
       from_id: user.id,
       to_id: toId,
-      message: msg.trim().slice(0, 280) || null,
+      message,
     });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
+    sendPushTo({ toUserId: toId, title: "🏀 Hoop sesh invite", body: message ?? "Someone wants to run it.", url: "/app", tag: `invite-${user.id}` });
     setOpen(false);
     toast.success(`Invite sent to @${toName}`);
   }
