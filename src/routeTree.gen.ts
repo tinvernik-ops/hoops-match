@@ -18,6 +18,7 @@ import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppDrillsRouteImport } from './routes/app.drills'
 import { Route as AppLeaguesIndexRouteImport } from './routes/app.leagues.index'
 import { Route as AppPlayerIdRouteImport } from './routes/app.player.$id'
+import { Route as AppLeaguesIdRouteImport } from './routes/app.leagues.$id'
 import { Route as AppLeaguesIdIndexRouteImport } from './routes/app.leagues.$id.index'
 import { Route as AppLeaguesIdLogRouteImport } from './routes/app.leagues.$id.log'
 
@@ -66,15 +67,20 @@ const AppPlayerIdRoute = AppPlayerIdRouteImport.update({
   path: '/player/$id',
   getParentRoute: () => AppRoute,
 } as any)
-const AppLeaguesIdIndexRoute = AppLeaguesIdIndexRouteImport.update({
-  id: '/leagues/$id/',
-  path: '/leagues/$id/',
+const AppLeaguesIdRoute = AppLeaguesIdRouteImport.update({
+  id: '/leagues/$id',
+  path: '/leagues/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeaguesIdIndexRoute = AppLeaguesIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppLeaguesIdRoute,
+} as any)
 const AppLeaguesIdLogRoute = AppLeaguesIdLogRouteImport.update({
-  id: '/leagues/$id/log',
-  path: '/leagues/$id/log',
-  getParentRoute: () => AppRoute,
+  id: '/log',
+  path: '/log',
+  getParentRoute: () => AppLeaguesIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
+  '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
@@ -111,6 +118,7 @@ export interface FileRoutesById {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
+  '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
@@ -126,6 +134,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app/'
+    | '/app/leagues/$id'
     | '/app/player/$id'
     | '/app/leagues/'
     | '/app/leagues/$id/log'
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app/'
+    | '/app/leagues/$id'
     | '/app/player/$id'
     | '/app/leagues/'
     | '/app/leagues/$id/log'
@@ -228,32 +238,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlayerIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leagues/$id': {
+      id: '/app/leagues/$id'
+      path: '/leagues/$id'
+      fullPath: '/app/leagues/$id'
+      preLoaderRoute: typeof AppLeaguesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leagues/$id/': {
       id: '/app/leagues/$id/'
-      path: '/leagues/$id'
+      path: '/'
       fullPath: '/app/leagues/$id/'
       preLoaderRoute: typeof AppLeaguesIdIndexRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppLeaguesIdRoute
     }
     '/app/leagues/$id/log': {
       id: '/app/leagues/$id/log'
-      path: '/leagues/$id/log'
+      path: '/log'
       fullPath: '/app/leagues/$id/log'
       preLoaderRoute: typeof AppLeaguesIdLogRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppLeaguesIdRoute
     }
   }
 }
+
+interface AppLeaguesIdRouteChildren {
+  AppLeaguesIdLogRoute: typeof AppLeaguesIdLogRoute
+  AppLeaguesIdIndexRoute: typeof AppLeaguesIdIndexRoute
+}
+
+const AppLeaguesIdRouteChildren: AppLeaguesIdRouteChildren = {
+  AppLeaguesIdLogRoute: AppLeaguesIdLogRoute,
+  AppLeaguesIdIndexRoute: AppLeaguesIdIndexRoute,
+}
+
+const AppLeaguesIdRouteWithChildren = AppLeaguesIdRoute._addFileChildren(
+  AppLeaguesIdRouteChildren,
+)
 
 interface AppRouteChildren {
   AppDrillsRoute: typeof AppDrillsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppLeaguesIdRoute: typeof AppLeaguesIdRouteWithChildren
   AppPlayerIdRoute: typeof AppPlayerIdRoute
   AppLeaguesIndexRoute: typeof AppLeaguesIndexRoute
-  AppLeaguesIdLogRoute: typeof AppLeaguesIdLogRoute
-  AppLeaguesIdIndexRoute: typeof AppLeaguesIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -261,10 +291,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppLeaguesIdRoute: AppLeaguesIdRouteWithChildren,
   AppPlayerIdRoute: AppPlayerIdRoute,
   AppLeaguesIndexRoute: AppLeaguesIndexRoute,
-  AppLeaguesIdLogRoute: AppLeaguesIdLogRoute,
-  AppLeaguesIdIndexRoute: AppLeaguesIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
