@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { distanceKm } from "@/lib/players";
+import { sendPushTo } from "@/lib/push";
 
 export const Route = createFileRoute("/app/player/$id")({
   component: PlayerPage,
