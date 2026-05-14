@@ -164,10 +164,14 @@ function ProfilePage() {
           </div>
         </div>
         <div>
-          <Label htmlFor="playstyle">Playstyle <span className="text-muted-foreground font-normal">(visible)</span></Label>
-          <Textarea id="playstyle" maxLength={120} rows={2} value={form.playstyle}
-            onChange={(e) => setForm({ ...form, playstyle: e.target.value })}
-            placeholder="Slasher, lockdown D, spot-up shooter…" />
+          <Label>Playstyle <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Select value={form.playstyle || undefined}
+            onValueChange={(v) => setForm({ ...form, playstyle: v })}>
+            <SelectTrigger><SelectValue placeholder="Pick your archetype" /></SelectTrigger>
+            <SelectContent>
+              {PLAYSTYLES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label>Preferred game type <span className="text-muted-foreground font-normal">(visible)</span></Label>
