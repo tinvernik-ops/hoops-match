@@ -7,10 +7,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, LogOut, Settings, Target } from "lucide-react";
+import { StatBarCard } from "@/components/stat-bar-card";
+import { PLAYSTYLES } from "@/lib/playstyles";
 
 const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
 const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
