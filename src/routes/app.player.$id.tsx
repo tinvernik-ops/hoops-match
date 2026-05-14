@@ -56,7 +56,6 @@ function PlayerPage() {
         <ArrowLeft className="size-4" /> Back
       </button>
 
-      <div className="rounded-3xl bg-card p-6 text-center">
       <StatBarCard
         initial={p.username.slice(0, 1).toUpperCase()}
         name={p.username}
@@ -115,14 +114,8 @@ function PlayerPage() {
   );
 }
 
-function StatBlock({ label, value }: { label: string; value: number | null }) {
-  return (
-    <div className="rounded-2xl bg-secondary py-4">
-      <div className="text-display text-5xl font-bold text-primary leading-none">{value ?? "—"}</div>
-      <div className="text-[11px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
-    </div>
-  );
-}
+
+
 
 function CallUpButton({ toId, toName }: { toId: string; toName: string }) {
   const { user } = useAuth();
