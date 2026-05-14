@@ -11,6 +11,7 @@ import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { distanceKm } from "@/lib/players";
 import { sendPushTo } from "@/lib/push";
+import { StatBarCard } from "@/components/stat-bar-card";
 
 export const Route = createFileRoute("/app/player/$id")({
   component: PlayerPage,
@@ -56,11 +57,15 @@ function PlayerPage() {
       </button>
 
       <div className="rounded-3xl bg-card p-6 text-center">
-        <div className="mx-auto grid place-items-center size-24 rounded-full bg-gradient-to-br from-primary to-rim text-primary-foreground text-display text-4xl font-bold">
-          {p.username.slice(0, 1).toUpperCase()}
-        </div>
-        <h1 className="text-display text-3xl font-bold mt-3">@{p.username}</h1>
-        <div className="text-xs text-muted-foreground flex items-center justify-center gap-2 mt-1">
+      <StatBarCard
+        initial={p.username.slice(0, 1).toUpperCase()}
+        name={p.username}
+        defense={data.defense}
+        offense={data.offense}
+      />
+
+      <div className="rounded-3xl bg-card p-6 text-center mt-4">
+        <div className="text-xs text-muted-foreground flex items-center justify-center gap-2">
           <MapPin className="size-3" />
           {data.distance != null
             ? data.distance < 1 ? `${Math.round(data.distance * 1000)}m away` : `${data.distance.toFixed(1)}km away`
@@ -83,11 +88,7 @@ function PlayerPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <StatBlock label="Offense" value={data.offense} />
-          <StatBlock label="Defense" value={data.defense} />
-        </div>
-        <p className="text-[11px] uppercase tracking-widest text-muted-foreground mt-3">
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground mt-4">
           {data.count} {data.count === 1 ? "rating" : "ratings"}
         </p>
 
