@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useLang } from "@/hooks/use-lang";
 import { ensurePushSubscription } from "@/lib/push";
 import { Home, User, Trophy } from "lucide-react";
 
@@ -25,10 +26,11 @@ function AppLayout() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
+  const { t } = useLang();
   const tabs = [
-    { to: "/app", label: "Court", icon: Home, exact: true },
-    { to: "/app/leagues", label: "Leagues", icon: Trophy, exact: false },
-    { to: "/app/profile", label: "Profile", icon: User, exact: false },
+    { to: "/app", label: t("nav.court"), icon: Home, exact: true },
+    { to: "/app/leagues", label: t("nav.leagues"), icon: Trophy, exact: false },
+    { to: "/app/profile", label: t("nav.profile"), icon: User, exact: false },
   ];
 
   return (
