@@ -11,6 +11,7 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const { user, loading } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const loc = useLocation();
 
@@ -26,7 +27,6 @@ function AppLayout() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  const { t } = useLang();
   const tabs = [
     { to: "/app", label: t("nav.court"), icon: Home, exact: true },
     { to: "/app/leagues", label: t("nav.leagues"), icon: Trophy, exact: false },
@@ -38,12 +38,12 @@ function AppLayout() {
       <Outlet />
       <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-md grid grid-cols-3">
-          {tabs.map((t) => {
-            const active = t.exact ? loc.pathname === t.to : loc.pathname.startsWith(t.to);
+          {tabs.map((tab) => {
+            const active = tab.exact ? loc.pathname === tab.to : loc.pathname.startsWith(tab.to);
             return (
-              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-1 py-3 text-xs font-medium ${active ? "text-primary" : "text-muted-foreground"}`}>
-                <t.icon className="size-5" />
-                {t.label}
+              <Link key={tab.to} to={tab.to} className={`flex flex-col items-center gap-1 py-3 text-xs font-medium ${active ? "text-primary" : "text-muted-foreground"}`}>
+                <tab.icon className="size-5" />
+                {tab.label}
               </Link>
             );
           })}
