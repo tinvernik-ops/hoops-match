@@ -10,6 +10,8 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { LangProvider } from "@/hooks/use-lang";
+import { LanguagePickerModal } from "@/components/language-picker-modal";
 
 import appCss from "../styles.css?url";
 
@@ -104,10 +106,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <Outlet />
-          <Toaster position="top-center" />
-        </AuthProvider>
+        <LangProvider>
+          <AuthProvider>
+            <Outlet />
+            <LanguagePickerModal />
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </LangProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
