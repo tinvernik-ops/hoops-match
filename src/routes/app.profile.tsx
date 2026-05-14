@@ -44,9 +44,16 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle();
+      const [{ data: prof, error }, { data: ratings, error: rErr }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
+      ]);
       if (error) throw error;
-      return data;
+      if (rErr) throw rErr;
+      const n = ratings?.length ?? 0;
+      const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
+      const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
+      return { ...prof!, offense_avg: offense, defense_avg: defense };
     },
     enabled: !!user,
   });
@@ -106,18 +113,24 @@ function ProfilePage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-6">
-      <header className="flex items-center gap-4 mb-6">
-        <div className="grid place-items-center size-20 rounded-full bg-gradient-to-br from-primary to-rim text-primary-foreground text-display text-3xl font-bold">
-          {(profile?.username ?? "H").slice(0, 1).toUpperCase()}
-        </div>
-        <div className="flex-1 min-w-0">
+      <header className="flex items-center justify-between mb-4">
+        <div className="min-w-0">
           <h1 className="text-display text-2xl font-bold truncate">@{profile?.username}</h1>
-          <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
         </div>
-        <Link to="/app/settings" className="grid place-items-center size-10 rounded-full bg-secondary" aria-label="Settings">
+        <Link to="/app/settings" className="grid place-items-center size-10 rounded-full bg-secondary shrink-0" aria-label="Settings">
           <Settings className="size-5" />
         </Link>
       </header>
+
+      <div className="mb-6">
+        <StatBarCard
+          initial={(profile?.username ?? "H").slice(0, 1).toUpperCase()}
+          name={profile?.username ?? ""}
+          defense={profile?.defense_avg ?? null}
+          offense={profile?.offense_avg ?? null}
+        />
+      </div>
 
       <form onSubmit={onSave} className="space-y-4">
         <div>
