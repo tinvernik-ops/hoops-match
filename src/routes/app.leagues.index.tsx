@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Trophy, Plus, KeyRound, Loader2, ChevronRight } from "lucide-react";
+import { useLang } from "@/hooks/use-lang";
 
 export const Route = createFileRoute("/app/leagues/")({
   component: LeaguesIndex,
