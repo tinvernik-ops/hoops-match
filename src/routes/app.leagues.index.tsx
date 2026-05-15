@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Trophy, Plus, KeyRound, Loader2, ChevronRight } from "lucide-react";
+import { useLang } from "@/hooks/use-lang";
 
 export const Route = createFileRoute("/app/leagues/")({
   component: LeaguesIndex,
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/app/leagues/")({
 
 function LeaguesIndex() {
   const { user } = useAuth();
+  const { t } = useLang();
   const { data: leagues = [], isLoading, refetch } = useQuery({
     queryKey: ["my-leagues", user?.id],
     queryFn: () => fetchMyLeagues(user!.id),
@@ -57,7 +59,7 @@ function LeaguesIndex() {
       .update({ status: accept ? "accepted" : "declined" })
       .eq("id", inviteId);
     if (error) { toast.error(error.message); return; }
-    toast.success(accept ? "Joined league" : "Declined");
+    toast.success(accept ? t("leagues.joined") : t("leagues.declined"));
     refetchInvites();
     refetch();
   }
@@ -66,22 +68,22 @@ function LeaguesIndex() {
     <main className="mx-auto w-full max-w-md px-4 pt-6">
       <header className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-display text-4xl font-bold text-primary leading-none">LEAGUES</h1>
-          <p className="text-xs text-muted-foreground mt-1">Run with your crew. Track every dub.</p>
+          <h1 className="text-display text-4xl font-bold text-primary leading-none">{t("leagues.title")}</h1>
+          <p className="text-xs text-muted-foreground mt-1">{t("leagues.sub")}</p>
         </div>
       </header>
 
       {pendingInvites.length > 0 && (
         <section className="mb-5">
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Invites</h2>
+          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{t("leagues.invites")}</h2>
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
               <div key={inv.id} className="rounded-2xl bg-card p-4 border border-primary/30">
                 <div className="font-semibold truncate">{inv.league_name}</div>
-                <div className="text-xs text-muted-foreground mb-3">from @{inv.from_username}</div>
+                <div className="text-xs text-muted-foreground mb-3">{t("leagues.from")} @{inv.from_username}</div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>Accept</Button>
-                  <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>Decline</Button>
+                  <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>{t("leagues.accept")}</Button>
+                  <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>{t("leagues.decline")}</Button>
                 </div>
               </div>
             ))}
@@ -94,7 +96,7 @@ function LeaguesIndex() {
         <JoinLeagueDialog onJoined={() => refetch()} />
       </div>
 
-      <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Your leagues</h2>
+      <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{t("leagues.your")}</h2>
 
       {isLoading ? (
         <div className="space-y-3">
@@ -103,8 +105,8 @@ function LeaguesIndex() {
       ) : leagues.length === 0 ? (
         <div className="rounded-2xl bg-card p-8 text-center">
           <Trophy className="mx-auto size-10 text-primary mb-3" />
-          <h3 className="font-semibold mb-1">No leagues yet</h3>
-          <p className="text-sm text-muted-foreground">Create one with your usual crew or join one with a code.</p>
+          <h3 className="font-semibold mb-1">{t("leagues.none")}</h3>
+          <p className="text-sm text-muted-foreground">{t("leagues.none_sub")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -120,7 +122,7 @@ function LeaguesIndex() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{l.name}</div>
-                <div className="text-xs text-muted-foreground">Code: <span className="font-mono">{l.join_code}</span></div>
+                <div className="text-xs text-muted-foreground">{t("leagues.code")}: <span className="font-mono">{l.join_code}</span></div>
               </div>
               <ChevronRight className="size-5 text-muted-foreground" />
             </Link>
@@ -133,6 +135,7 @@ function LeaguesIndex() {
 
 function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
   const { user } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -140,7 +143,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
 
   async function create() {
     if (!user || name.trim().length < 2) {
-      toast.error("Name too short");
+      toast.error(t("leagues.name_short"));
       return;
     }
     setBusy(true);
@@ -157,7 +160,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
     setOpen(false);
     setName("");
     onCreated();
-    toast.success("League created");
+    toast.success(t("leagues.created"));
     nav({ to: "/app/leagues/$id", params: { id: data.id } });
   }
 
@@ -166,18 +169,18 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
       <DialogTrigger asChild>
         <button className="flex flex-col items-center gap-2 rounded-2xl bg-primary text-primary-foreground py-5 font-semibold">
           <Plus className="size-6" />
-          <span className="text-sm">Create league</span>
+          <span className="text-sm">{t("leagues.create")}</span>
         </button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>New league</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("leagues.new")}</DialogTitle></DialogHeader>
         <div>
-          <Label htmlFor="lname">League name</Label>
-          <Input id="lname" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sunday Run" />
+          <Label htmlFor="lname">{t("leagues.name")}</Label>
+          <Input id="lname" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("leagues.name_ph")} />
         </div>
         <DialogFooter>
           <Button onClick={create} disabled={busy} className="w-full font-bold">
-            {busy ? <Loader2 className="animate-spin" /> : "Create"}
+            {busy ? <Loader2 className="animate-spin" /> : t("common.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -187,6 +190,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
 
 function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
   const { user } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -195,13 +199,13 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
   async function join() {
     if (!user) return;
     const c = code.trim().toUpperCase();
-    if (c.length < 4) { toast.error("Invalid code"); return; }
+    if (c.length < 4) { toast.error(t("leagues.invalid_code")); return; }
     setBusy(true);
     const { data: league, error } = await supabase
       .from("leagues").select("id").eq("join_code", c).maybeSingle();
     if (error || !league) {
       setBusy(false);
-      toast.error("League not found");
+      toast.error(t("leagues.not_found"));
       return;
     }
     const { error: jErr } = await supabase
@@ -215,7 +219,7 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
     setOpen(false);
     setCode("");
     onJoined();
-    toast.success("Joined league");
+    toast.success(t("leagues.joined"));
     nav({ to: "/app/leagues/$id", params: { id: league.id } });
   }
 
@@ -224,19 +228,19 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
       <DialogTrigger asChild>
         <button className="flex flex-col items-center gap-2 rounded-2xl bg-secondary text-foreground py-5 font-semibold">
           <KeyRound className="size-6" />
-          <span className="text-sm">Join with code</span>
+          <span className="text-sm">{t("leagues.join_code")}</span>
         </button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Join a league</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("leagues.join")}</DialogTitle></DialogHeader>
         <div>
-          <Label htmlFor="code">Join code</Label>
+          <Label htmlFor="code">{t("leagues.join_field")}</Label>
           <Input id="code" maxLength={10} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="ABC123" className="font-mono uppercase" />
         </div>
         <DialogFooter>
           <Button onClick={join} disabled={busy} className="w-full font-bold">
-            {busy ? <Loader2 className="animate-spin" /> : "Join"}
+            {busy ? <Loader2 className="animate-spin" /> : t("leagues.join_btn")}
           </Button>
         </DialogFooter>
       </DialogContent>

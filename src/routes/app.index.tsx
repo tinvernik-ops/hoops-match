@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useGeoAndNotify } from "@/hooks/use-geo";
+import { useLang } from "@/hooks/use-lang";
+import { useRadius } from "@/hooks/use-radius";
 import { fetchPlayersWithStats } from "@/lib/players";
 import { fetchCourts, clusterPlayersAtCourts, createCourt, type CourtWithCount } from "@/lib/courts";
 import { PlayerCard } from "@/components/player-card";
@@ -20,21 +22,31 @@ export const Route = createFileRoute("/app/")({
 function CourtPage() {
   const { user } = useAuth();
   const { coords, denied } = useGeoAndNotify();
+  const { t } = useLang();
+  const { courtsKm, hoopersKm } = useRadius();
   const [openCourt, setOpenCourt] = useState<CourtWithCount | null>(null);
 
-  const { data: players = [], isLoading, refetch } = useQuery({
+  const { data: allPlayers = [], isLoading, refetch } = useQuery({
     queryKey: ["players", user?.id, coords?.lat, coords?.lng],
     queryFn: () => fetchPlayersWithStats(user!.id, coords),
     enabled: !!user,
   });
 
-  const { data: courts = [], refetch: refetchCourts } = useQuery({
+  const { data: allCourts = [], refetch: refetchCourts } = useQuery({
     queryKey: ["courts"],
     queryFn: fetchCourts,
     enabled: !!user,
   });
 
-  const courtsWithCount = clusterPlayersAtCourts(courts, players, coords);
+  // Apply radius filters (if no coords yet, show everything)
+  const players = coords
+    ? allPlayers.filter((p) => p.distance_km == null || p.distance_km <= hoopersKm)
+    : allPlayers;
+  const courtsAll = clusterPlayersAtCourts(allCourts, allPlayers, coords);
+  const courtsWithCount = coords
+    ? courtsAll.filter((c) => c.distance_km == null || c.distance_km <= courtsKm)
+    : courtsAll;
+
   const totalHoopers = players.length;
   const activeCourts = courtsWithCount.filter((c) => c.player_count > 0).length;
 
@@ -44,53 +56,50 @@ function CourtPage() {
       .channel("invites-incoming")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "invites", filter: `to_id=eq.${user.id}` }, (payload) => {
         const inv = payload.new as { message: string | null };
-        toast("🏀 New hoop sesh invite!", { description: inv.message ?? "Someone wants to run it." });
+        toast("🏀 " + t("player.invite_sent"), { description: inv.message ?? "" });
         refetch();
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "league_invites", filter: `to_id=eq.${user.id}` }, () => {
-        toast("🏆 You've been invited to a league!", { description: "Check the Leagues tab to accept." });
+        toast("🏆 " + t("ld.invite_sent"));
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "courts" }, () => refetchCourts())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, refetch, refetchCourts]);
+  }, [user, refetch, refetchCourts, t]);
 
   const notifEnabled = typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted";
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-5 pb-4">
-      {/* Hero */}
       <header className="mb-5">
         <div className="flex items-center justify-between">
           <h1 className="text-display text-5xl font-black tracking-tight text-primary leading-none">HOOPS</h1>
           <div className="flex items-center gap-1.5">
             <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${coords ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
-              <MapPin className="size-3" /> {coords ? "Live" : denied ? "Off" : "…"}
+              <MapPin className="size-3" /> {coords ? t("home.live") : denied ? t("home.off") : "…"}
             </span>
             <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${notifEnabled ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
               {notifEnabled ? <Bell className="size-3" /> : <BellOff className="size-3" />}
-              {notifEnabled ? "On" : "Off"}
+              {notifEnabled ? t("home.on") : t("home.off")}
             </span>
           </div>
         </div>
 
-        {/* Stat bar */}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-2xl bg-gradient-to-br from-primary to-rim text-primary-foreground p-4">
             <div className="text-display text-3xl font-black leading-none">{totalHoopers}</div>
-            <div className="text-[10px] uppercase tracking-widest opacity-90 mt-1.5">Hoopers nearby</div>
+            <div className="text-[10px] uppercase tracking-widest opacity-90 mt-1.5">{t("home.hoopers_nearby")}</div>
           </div>
           <div className="rounded-2xl bg-card border border-border/60 p-4">
             <div className="text-display text-3xl font-black leading-none text-primary">{activeCourts}</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1.5">Active courts</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1.5">{t("home.active_courts")}</div>
           </div>
         </div>
       </header>
 
-      {/* Courts */}
       <section className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground">Courts near you</h2>
+          <h2 className="text-xs uppercase tracking-widest text-muted-foreground">{t("home.courts_near")} · {courtsKm}km</h2>
           <AddCourtButton coords={coords} onAdded={refetchCourts} />
         </div>
         {courtsWithCount.length === 0 ? (
@@ -98,7 +107,7 @@ function CourtPage() {
             onClick={() => coords && document.getElementById("add-court-trigger")?.click()}
             className="w-full rounded-2xl bg-card border border-dashed border-border p-6 text-center text-sm text-muted-foreground hover:border-primary transition-colors"
           >
-            <Plus className="inline size-4 mr-1" /> Mark your first court
+            <Plus className="inline size-4 mr-1" /> {t("home.mark_first")}
           </button>
         ) : (
           <div className="space-y-2">
@@ -123,7 +132,7 @@ function CourtPage() {
                 <div className="text-right shrink-0">
                   <div className={`text-display text-2xl font-black leading-none ${c.player_count > 0 ? "text-primary" : "text-muted-foreground"}`}>{c.player_count}</div>
                   <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                    {c.player_count === 1 ? "hooper" : "hoopers"}
+                    {c.player_count === 1 ? t("home.hooper") : t("home.hoopers")}
                   </div>
                 </div>
               </button>
@@ -132,9 +141,8 @@ function CourtPage() {
         )}
       </section>
 
-      {/* Hoopers */}
       <section>
-        <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Hoopers near you</h2>
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{t("home.hoopers_near")} · {hoopersKm}km</h2>
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -156,6 +164,7 @@ function CourtPage() {
 }
 
 function CourtMapDialog({ court, onClose }: { court: CourtWithCount | null; onClose: () => void }) {
+  const { t } = useLang();
   if (!court) return null;
   const delta = 0.003;
   const bbox = `${court.lng - delta}%2C${court.lat - delta}%2C${court.lng + delta}%2C${court.lat + delta}`;
@@ -167,8 +176,8 @@ function CourtMapDialog({ court, onClose }: { court: CourtWithCount | null; onCl
         <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle className="text-display text-xl">{court.name}</DialogTitle>
           <p className="text-xs text-muted-foreground">
-            {court.player_count} {court.player_count === 1 ? "hooper" : "hoopers"} here
-            {court.distance_km != null && ` · ${court.distance_km < 1 ? Math.round(court.distance_km * 1000) + "m" : court.distance_km.toFixed(1) + "km"} away`}
+            {court.player_count} {court.player_count === 1 ? t("home.hooper") : t("home.hoopers")} {t("home.here")}
+            {court.distance_km != null && ` · ${court.distance_km < 1 ? Math.round(court.distance_km * 1000) + "m" : court.distance_km.toFixed(1) + "km"} ${t("common.away")}`}
           </p>
         </DialogHeader>
         <div className="relative w-full aspect-square bg-secondary">
@@ -186,9 +195,9 @@ function CourtMapDialog({ court, onClose }: { court: CourtWithCount | null; onCl
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary text-secondary-foreground py-3 text-sm font-bold"
           >
-            <ExternalLink className="size-4" /> Google Maps
+            <ExternalLink className="size-4" /> {t("home.gmaps")}
           </a>
-          <Button onClick={onClose} className="font-bold">Close</Button>
+          <Button onClick={onClose} className="font-bold">{t("common.close")}</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -197,6 +206,7 @@ function CourtMapDialog({ court, onClose }: { court: CourtWithCount | null; onCl
 
 function AddCourtButton({ coords, onAdded }: { coords: { lat: number; lng: number } | null; onAdded: () => void }) {
   const { user } = useAuth();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -206,7 +216,7 @@ function AddCourtButton({ coords, onAdded }: { coords: { lat: number; lng: numbe
     setBusy(true);
     try {
       await createCourt({ name: name.trim().slice(0, 80), lat: coords.lat, lng: coords.lng, userId: user.id });
-      toast.success("Court added at your location");
+      toast.success(t("toast.court_added"));
       setOpen(false);
       setName("");
       onAdded();
@@ -221,23 +231,23 @@ function AddCourtButton({ coords, onAdded }: { coords: { lat: number; lng: numbe
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button id="add-court-trigger" size="sm" variant="secondary" className="gap-1 h-8" disabled={!coords}>
-          <Plus className="size-4" /> Add
+          <Plus className="size-4" /> {t("home.add")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mark a court</DialogTitle>
+          <DialogTitle>{t("home.court.mark")}</DialogTitle>
         </DialogHeader>
-        <p className="text-xs text-muted-foreground -mt-2">Pinned at your current location.</p>
+        <p className="text-xs text-muted-foreground -mt-2">{t("home.court.pinned")}</p>
         <Input
-          placeholder="Court name (e.g. West Park)"
+          placeholder={t("home.court.name_ph")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={80}
         />
         <DialogFooter>
           <Button onClick={save} disabled={busy || !name.trim() || !coords} className="w-full font-bold">
-            {busy ? "Saving…" : "Add court"}
+            {busy ? t("home.court.saving") : t("home.court.add_btn")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -246,11 +256,12 @@ function AddCourtButton({ coords, onAdded }: { coords: { lat: number; lng: numbe
 }
 
 function EmptyState() {
+  const { t } = useLang();
   return (
     <div className="rounded-2xl bg-card p-8 text-center">
       <div className="text-5xl mb-3">🏟️</div>
-      <h3 className="font-semibold mb-1">Court's empty</h3>
-      <p className="text-sm text-muted-foreground">No hoopers around yet. Invite friends to join Hoops and they'll show up here.</p>
+      <h3 className="font-semibold mb-1">{t("home.empty.title")}</h3>
+      <p className="text-sm text-muted-foreground">{t("home.empty.sub")}</p>
     </div>
   );
 }
