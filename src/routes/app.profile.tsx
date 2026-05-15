@@ -94,10 +94,10 @@ function ProfilePage() {
         }
         throw error;
       }
-      toast.success("Profile saved");
+      toast.success(t("profile.saved"));
       refetch();
     } catch (err: unknown) {
-      const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Failed";
+      const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : t("toast.failed");
       toast.error(msg);
     } finally {
       setBusy(false);
@@ -110,7 +110,7 @@ function ProfilePage() {
   }
 
   if (isLoading) {
-    return <div className="p-6 text-muted-foreground">Loading…</div>;
+    return <div className="p-6 text-muted-foreground">{t("common.loading")}</div>;
   }
 
   return (
