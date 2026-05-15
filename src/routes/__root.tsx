@@ -108,11 +108,13 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LangProvider>
-          <AuthProvider>
-            <Outlet />
-            <LanguagePickerModal />
-            <Toaster position="top-center" />
-          </AuthProvider>
+          <RadiusProvider>
+            <AuthProvider>
+              <Outlet />
+              <LanguagePickerModal />
+              <Toaster position="top-center" />
+            </AuthProvider>
+          </RadiusProvider>
         </LangProvider>
       </ThemeProvider>
     </QueryClientProvider>
