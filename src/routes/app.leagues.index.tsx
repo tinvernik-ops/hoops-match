@@ -135,6 +135,7 @@ function LeaguesIndex() {
 
 function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
   const { user } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -142,7 +143,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
 
   async function create() {
     if (!user || name.trim().length < 2) {
-      toast.error("Name too short");
+      toast.error(t("leagues.name_short"));
       return;
     }
     setBusy(true);
@@ -159,7 +160,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
     setOpen(false);
     setName("");
     onCreated();
-    toast.success("League created");
+    toast.success(t("leagues.created"));
     nav({ to: "/app/leagues/$id", params: { id: data.id } });
   }
 
@@ -168,18 +169,18 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
       <DialogTrigger asChild>
         <button className="flex flex-col items-center gap-2 rounded-2xl bg-primary text-primary-foreground py-5 font-semibold">
           <Plus className="size-6" />
-          <span className="text-sm">Create league</span>
+          <span className="text-sm">{t("leagues.create")}</span>
         </button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>New league</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("leagues.new")}</DialogTitle></DialogHeader>
         <div>
-          <Label htmlFor="lname">League name</Label>
-          <Input id="lname" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sunday Run" />
+          <Label htmlFor="lname">{t("leagues.name")}</Label>
+          <Input id="lname" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("leagues.name_ph")} />
         </div>
         <DialogFooter>
           <Button onClick={create} disabled={busy} className="w-full font-bold">
-            {busy ? <Loader2 className="animate-spin" /> : "Create"}
+            {busy ? <Loader2 className="animate-spin" /> : t("common.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
