@@ -35,6 +35,7 @@ const schema = z.object({
 
 function ProfilePage() {
   const { user } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
