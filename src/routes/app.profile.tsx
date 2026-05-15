@@ -120,7 +120,7 @@ function ProfilePage() {
           <h1 className="text-display text-2xl font-bold truncate">@{profile?.username}</h1>
           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
         </div>
-        <Link to="/app/settings" className="grid place-items-center size-10 rounded-full bg-secondary shrink-0" aria-label="Settings">
+        <Link to="/app/settings" className="grid place-items-center size-10 rounded-full bg-secondary shrink-0" aria-label={t("settings.title")}>
           <Settings className="size-5" />
         </Link>
       </header>
@@ -136,69 +136,69 @@ function ProfilePage() {
 
       <form onSubmit={onSave} className="space-y-4">
         <div>
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="username">{t("profile.username")}</Label>
           <Input id="username" maxLength={24} value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })} />
         </div>
         <div>
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">{t("profile.phone")}</Label>
           <Input id="phone" type="tel" maxLength={20} value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })} />
         </div>
         <div>
-          <Label htmlFor="height">Height (cm)</Label>
+          <Label htmlFor="height">{t("profile.height")}</Label>
           <Input id="height" type="number" min={120} max={250} value={form.height_cm}
             onChange={(e) => setForm({ ...form, height_cm: e.target.value })}
-            placeholder="e.g. 185" />
+            placeholder="185" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="vertical">Vertical (cm)</Label>
+            <Label htmlFor="vertical">{t("profile.vertical")}</Label>
             <Input id="vertical" type="number" min={10} max={150} value={form.vertical_cm}
               onChange={(e) => setForm({ ...form, vertical_cm: e.target.value })}
-              placeholder="opt." />
+              placeholder={t("common.opt")} />
           </div>
           <div>
-            <Label htmlFor="weight">Weight (kg)</Label>
+            <Label htmlFor="weight">{t("profile.weight")}</Label>
             <Input id="weight" type="number" min={30} max={250} value={form.weight_kg}
               onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
-              placeholder="opt." />
+              placeholder={t("common.opt")} />
           </div>
         </div>
         <div>
-          <Label>Playstyle <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Label>{t("profile.playstyle")} <span className="text-muted-foreground font-normal">({t("profile.visible")})</span></Label>
           <Select value={form.playstyle || undefined}
             onValueChange={(v) => setForm({ ...form, playstyle: v })}>
-            <SelectTrigger><SelectValue placeholder="Pick your archetype" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("profile.pick_archetype")} /></SelectTrigger>
             <SelectContent>
               {PLAYSTYLES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label>Preferred game type <span className="text-muted-foreground font-normal">(visible)</span></Label>
+          <Label>{t("profile.preferred_game")} <span className="text-muted-foreground font-normal">({t("profile.visible")})</span></Label>
           <Select value={form.preferred_game_type || undefined}
             onValueChange={(v) => setForm({ ...form, preferred_game_type: v as typeof GAME_TYPES[number] })}>
-            <SelectTrigger><SelectValue placeholder="Pick one" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("profile.pick_one")} /></SelectTrigger>
             <SelectContent>
               {GAME_TYPES.map((g) => <SelectItem key={g} value={g}>{GAME_TYPE_LABELS[g]}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <Button type="submit" disabled={busy} className="w-full h-12 font-bold" size="lg">
-          {busy ? <Loader2 className="animate-spin" /> : "Save"}
+          {busy ? <Loader2 className="animate-spin" /> : t("common.save")}
         </Button>
       </form>
 
       <Link to="/app/drills" className="mt-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-4 font-semibold">
-        <Target className="size-5" /> Shooting drills
+        <Target className="size-5" /> {t("profile.shooting_drills")}
       </Link>
 
       <button
         onClick={signOut}
         className="mt-8 w-full flex items-center justify-center gap-2 text-sm text-muted-foreground py-3"
       >
-        <LogOut className="size-4" /> Sign out
+        <LogOut className="size-4" /> {t("profile.signout")}
       </button>
     </main>
   );
