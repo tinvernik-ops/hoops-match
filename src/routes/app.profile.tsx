@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, LogOut, Settings, Target } from "lucide-react";
 import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
+import { useLang } from "@/hooks/use-lang";
 
 const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
 const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
