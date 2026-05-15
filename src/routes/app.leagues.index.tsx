@@ -190,6 +190,7 @@ function CreateLeagueDialog({ onCreated }: { onCreated: () => void }) {
 
 function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
   const { user } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -198,13 +199,13 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
   async function join() {
     if (!user) return;
     const c = code.trim().toUpperCase();
-    if (c.length < 4) { toast.error("Invalid code"); return; }
+    if (c.length < 4) { toast.error(t("leagues.invalid_code")); return; }
     setBusy(true);
     const { data: league, error } = await supabase
       .from("leagues").select("id").eq("join_code", c).maybeSingle();
     if (error || !league) {
       setBusy(false);
-      toast.error("League not found");
+      toast.error(t("leagues.not_found"));
       return;
     }
     const { error: jErr } = await supabase
@@ -218,7 +219,7 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
     setOpen(false);
     setCode("");
     onJoined();
-    toast.success("Joined league");
+    toast.success(t("leagues.joined"));
     nav({ to: "/app/leagues/$id", params: { id: league.id } });
   }
 
@@ -227,19 +228,19 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
       <DialogTrigger asChild>
         <button className="flex flex-col items-center gap-2 rounded-2xl bg-secondary text-foreground py-5 font-semibold">
           <KeyRound className="size-6" />
-          <span className="text-sm">Join with code</span>
+          <span className="text-sm">{t("leagues.join_code")}</span>
         </button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Join a league</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t("leagues.join")}</DialogTitle></DialogHeader>
         <div>
-          <Label htmlFor="code">Join code</Label>
+          <Label htmlFor="code">{t("leagues.join_field")}</Label>
           <Input id="code" maxLength={10} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="ABC123" className="font-mono uppercase" />
         </div>
         <DialogFooter>
           <Button onClick={join} disabled={busy} className="w-full font-bold">
-            {busy ? <Loader2 className="animate-spin" /> : "Join"}
+            {busy ? <Loader2 className="animate-spin" /> : t("leagues.join_btn")}
           </Button>
         </DialogFooter>
       </DialogContent>
