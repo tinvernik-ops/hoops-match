@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTheme } from "@/hooks/use-theme";
 import { useLang, LANGUAGES } from "@/hooks/use-lang";
-import { ArrowLeft, Sun, Moon, Check } from "lucide-react";
+import { useRadius } from "@/hooks/use-radius";
+import { Slider } from "@/components/ui/slider";
+import { ArrowLeft, Sun, Moon, Check, MapPin, Users } from "lucide-react";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
@@ -10,12 +12,13 @@ export const Route = createFileRoute("/app/settings")({
 function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { lang, setLang, t } = useLang();
+  const { courtsKm, hoopersKm, setCourtsKm, setHoopersKm } = useRadius();
   const nav = useNavigate();
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-4 space-y-6">
       <button onClick={() => nav({ to: "/app/profile" })} className="flex items-center gap-1 text-sm text-muted-foreground">
-        <ArrowLeft className="size-4" /> Back
+        <ArrowLeft className="size-4" /> {t("common.back")}
       </button>
 
       <h1 className="text-display text-3xl font-bold">{t("settings.title")}</h1>
@@ -36,6 +39,23 @@ function SettingsPage() {
             onClick={() => setTheme("dark")}
           />
         </div>
+      </section>
+
+      <section className="rounded-2xl bg-card p-4 space-y-5">
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground">{t("settings.radius")}</h2>
+
+        <RadiusSlider
+          icon={<MapPin className="size-4" />}
+          label={t("settings.radius.courts")}
+          value={courtsKm}
+          onChange={setCourtsKm}
+        />
+        <RadiusSlider
+          icon={<Users className="size-4" />}
+          label={t("settings.radius.hoopers")}
+          value={hoopersKm}
+          onChange={setHoopersKm}
+        />
       </section>
 
       <section className="rounded-2xl bg-card p-4">
@@ -60,6 +80,22 @@ function SettingsPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function RadiusSlider({
+  icon, label, value, onChange,
+}: { icon: React.ReactNode; label: string; value: number; onChange: (n: number) => void }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          {icon} {label}
+        </span>
+        <span className="text-display text-xl font-bold text-primary">{value} km</span>
+      </div>
+      <Slider value={[value]} min={1} max={50} step={1} onValueChange={(v) => onChange(v[0])} />
+    </div>
   );
 }
 
