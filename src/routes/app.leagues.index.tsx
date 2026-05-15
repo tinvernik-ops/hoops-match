@@ -59,7 +59,7 @@ function LeaguesIndex() {
       .update({ status: accept ? "accepted" : "declined" })
       .eq("id", inviteId);
     if (error) { toast.error(error.message); return; }
-    toast.success(accept ? "Joined league" : "Declined");
+    toast.success(accept ? t("leagues.joined") : t("leagues.declined"));
     refetchInvites();
     refetch();
   }
@@ -68,22 +68,22 @@ function LeaguesIndex() {
     <main className="mx-auto w-full max-w-md px-4 pt-6">
       <header className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-display text-4xl font-bold text-primary leading-none">LEAGUES</h1>
-          <p className="text-xs text-muted-foreground mt-1">Run with your crew. Track every dub.</p>
+          <h1 className="text-display text-4xl font-bold text-primary leading-none">{t("leagues.title")}</h1>
+          <p className="text-xs text-muted-foreground mt-1">{t("leagues.sub")}</p>
         </div>
       </header>
 
       {pendingInvites.length > 0 && (
         <section className="mb-5">
-          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Invites</h2>
+          <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{t("leagues.invites")}</h2>
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
               <div key={inv.id} className="rounded-2xl bg-card p-4 border border-primary/30">
                 <div className="font-semibold truncate">{inv.league_name}</div>
-                <div className="text-xs text-muted-foreground mb-3">from @{inv.from_username}</div>
+                <div className="text-xs text-muted-foreground mb-3">{t("leagues.from")} @{inv.from_username}</div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>Accept</Button>
-                  <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>Decline</Button>
+                  <Button size="sm" className="flex-1 font-bold" onClick={() => respond(inv.id, true)}>{t("leagues.accept")}</Button>
+                  <Button size="sm" variant="secondary" className="flex-1" onClick={() => respond(inv.id, false)}>{t("leagues.decline")}</Button>
                 </div>
               </div>
             ))}
@@ -96,7 +96,7 @@ function LeaguesIndex() {
         <JoinLeagueDialog onJoined={() => refetch()} />
       </div>
 
-      <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Your leagues</h2>
+      <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{t("leagues.your")}</h2>
 
       {isLoading ? (
         <div className="space-y-3">
@@ -105,8 +105,8 @@ function LeaguesIndex() {
       ) : leagues.length === 0 ? (
         <div className="rounded-2xl bg-card p-8 text-center">
           <Trophy className="mx-auto size-10 text-primary mb-3" />
-          <h3 className="font-semibold mb-1">No leagues yet</h3>
-          <p className="text-sm text-muted-foreground">Create one with your usual crew or join one with a code.</p>
+          <h3 className="font-semibold mb-1">{t("leagues.none")}</h3>
+          <p className="text-sm text-muted-foreground">{t("leagues.none_sub")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -122,7 +122,7 @@ function LeaguesIndex() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold truncate">{l.name}</div>
-                <div className="text-xs text-muted-foreground">Code: <span className="font-mono">{l.join_code}</span></div>
+                <div className="text-xs text-muted-foreground">{t("leagues.code")}: <span className="font-mono">{l.join_code}</span></div>
               </div>
               <ChevronRight className="size-5 text-muted-foreground" />
             </Link>
