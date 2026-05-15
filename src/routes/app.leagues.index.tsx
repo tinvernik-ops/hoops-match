@@ -18,6 +18,7 @@ export const Route = createFileRoute("/app/leagues/")({
 
 function LeaguesIndex() {
   const { user } = useAuth();
+  const { t } = useLang();
   const { data: leagues = [], isLoading, refetch } = useQuery({
     queryKey: ["my-leagues", user?.id],
     queryFn: () => fetchMyLeagues(user!.id),
