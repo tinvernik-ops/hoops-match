@@ -14,6 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      court_alert_state: {
+        Row: {
+          court_id: string
+          last_alert_at: string | null
+          last_player_count: number
+        }
+        Insert: {
+          court_id: string
+          last_alert_at?: string | null
+          last_player_count?: number
+        }
+        Update: {
+          court_id?: string
+          last_alert_at?: string | null
+          last_player_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "court_alert_state_court_id_fkey"
+            columns: ["court_id"]
+            isOneToOne: true
+            referencedRelation: "courts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courts: {
         Row: {
           created_at: string
@@ -38,6 +64,33 @@ export type Database = {
           lat?: number
           lng?: number
           name?: string
+        }
+        Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
         }
         Relationships: []
       }
@@ -248,6 +301,38 @@ export type Database = {
           },
         ]
       }
+      league_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_messages_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leagues: {
         Row: {
           created_at: string
@@ -282,6 +367,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          court_alert_radius_km: number
+          court_alert_threshold: number
           created_at: string
           height_cm: number | null
           id: string
@@ -297,6 +385,9 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          avatar_url?: string | null
+          court_alert_radius_km?: number
+          court_alert_threshold?: number
           created_at?: string
           height_cm?: number | null
           id: string
@@ -312,6 +403,9 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          avatar_url?: string | null
+          court_alert_radius_km?: number
+          court_alert_threshold?: number
           created_at?: string
           height_cm?: number | null
           id?: string

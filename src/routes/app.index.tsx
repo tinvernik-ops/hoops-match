@@ -10,10 +10,11 @@ import { fetchCourts, clusterPlayersAtCourts, createCourt, type CourtWithCount }
 import { PlayerCard } from "@/components/player-card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink } from "lucide-react";
+import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/")({
   component: CourtPage,
@@ -82,6 +83,7 @@ function CourtPage() {
               {notifEnabled ? <Bell className="size-3" /> : <BellOff className="size-3" />}
               {notifEnabled ? t("home.on") : t("home.off")}
             </span>
+            <InboxButton />
           </div>
         </div>
 
@@ -263,5 +265,41 @@ function EmptyState() {
       <h3 className="font-semibold mb-1">{t("home.empty.title")}</h3>
       <p className="text-sm text-muted-foreground">{t("home.empty.sub")}</p>
     </div>
+  );
+}
+
+function InboxButton() {
+  const { user } = useAuth();
+  const { data: unread = 0, refetch } = useQuery({
+    queryKey: ["dm-unread", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("direct_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", user!.id)
+        .is("read_at", null);
+      return count ?? 0;
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel("dm-badge")
+      .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages", filter: `recipient_id=eq.${user.id}` }, () => refetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, refetch]);
+
+  return (
+    <Link to="/app/messages" className="relative grid place-items-center size-9 rounded-full bg-secondary text-foreground" aria-label="Messages">
+      <MessageSquare className="size-4" />
+      {unread > 0 && (
+        <span className="absolute -top-1 -right-1 grid place-items-center min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
   );
 }

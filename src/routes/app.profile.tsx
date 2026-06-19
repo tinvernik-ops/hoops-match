@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, LogOut, Settings, Target } from "lucide-react";
+import { Loader2, LogOut, Settings, Target, MessageSquare, Camera } from "lucide-react";
 import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
 import { useLang } from "@/hooks/use-lang";
+import { uploadAvatar } from "@/lib/avatars";
 
 const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
 const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
@@ -125,14 +126,28 @@ function ProfilePage() {
         </Link>
       </header>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <StatBarCard
           initial={(profile?.username ?? "H").slice(0, 1).toUpperCase()}
           name={profile?.username ?? ""}
           defense={profile?.defense_avg ?? null}
           offense={profile?.offense_avg ?? null}
+          avatarPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
         />
       </div>
+
+      <AvatarUploader
+        userId={user!.id}
+        currentPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
+        onUploaded={() => refetch()}
+      />
+
+      <Link
+        to="/app/messages"
+        className="mt-4 mb-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-3 font-semibold"
+      >
+        <MessageSquare className="size-5" /> Messages
+      </Link>
 
       <form onSubmit={onSave} className="space-y-4">
         <div>
@@ -201,5 +216,45 @@ function ProfilePage() {
         <LogOut className="size-4" /> {t("profile.signout")}
       </button>
     </main>
+  );
+}
+
+function AvatarUploader({ userId, currentPath, onUploaded }: { userId: string; currentPath: string | null; onUploaded: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max 5MB");
+      return;
+    }
+    setBusy(true);
+    try {
+      await uploadAvatar(userId, file);
+      toast.success("Profile picture updated");
+      onUploaded();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onChange} />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        disabled={busy}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-secondary py-3 text-sm font-semibold"
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
+        {currentPath ? "Change profile picture" : "Add profile picture"}
+      </button>
+    </>
   );
 }

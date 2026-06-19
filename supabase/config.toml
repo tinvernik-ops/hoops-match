@@ -2,3 +2,6 @@ project_id = "fmxlfweedredlgpgqufs"
 
 [functions.send-push]
 verify_jwt = true
+
+[functions.court-alerts]
+verify_jwt = false

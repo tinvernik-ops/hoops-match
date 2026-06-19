@@ -1,22 +1,28 @@
+import { UserAvatar } from "@/components/user-avatar";
+
 type Props = {
   initial: string;
   name: string;
   defense: number | null;
   offense: number | null;
+  avatarPath?: string | null;
 };
 
 /**
- * Player stat card matching the design: avatar bubble on the left, name on top,
+ * Player stat card: avatar bubble on the left, name on top,
  * red defense bar with value on the right, green offense bar with value on the right.
  */
-export function StatBarCard({ initial, name, defense, offense }: Props) {
+export function StatBarCard({ initial, name, defense, offense, avatarPath }: Props) {
   return (
     <div className="rounded-2xl border-2 border-foreground/80 bg-card p-3 sm:p-4">
       <div className="flex items-center gap-3 sm:gap-4">
-        <div className="grid place-items-center size-16 sm:size-20 rounded-full border-2 border-foreground/80 shrink-0">
-          <div className="grid place-items-center size-10 sm:size-12 rounded-full border-2 border-foreground/70 text-display text-lg sm:text-xl font-bold">
-            {initial}
-          </div>
+        <div className="grid place-items-center size-16 sm:size-20 rounded-full border-2 border-foreground/80 shrink-0 p-1">
+          <UserAvatar
+            avatarPath={avatarPath}
+            fallback={initial}
+            className="size-full rounded-full"
+            textClassName="text-lg sm:text-xl"
+          />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-display text-base sm:text-lg font-bold tracking-wide truncate text-center mb-1">

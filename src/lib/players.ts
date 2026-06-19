@@ -7,6 +7,7 @@ export type PlayerRow = {
   height_cm: number | null;
   lat: number | null;
   lng: number | null;
+  avatar_url: string | null;
 };
 
 export type PlayerWithStats = PlayerRow & {
@@ -29,7 +30,7 @@ export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; ln
 
 export async function fetchPlayersWithStats(currentUserId: string, me: { lat: number; lng: number } | null) {
   const [{ data: profiles, error: pErr }, { data: ratings, error: rErr }] = await Promise.all([
-    supabase.from("profiles").select("id,username,phone,height_cm,lat,lng").neq("id", currentUserId),
+    supabase.from("profiles").select("id,username,phone,height_cm,lat,lng,avatar_url").neq("id", currentUserId),
     supabase.from("ratings").select("ratee_id,offense,defense"),
   ]);
   if (pErr) throw pErr;

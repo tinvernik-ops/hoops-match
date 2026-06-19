@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { PlayerWithStats } from "@/lib/players";
 import { MapPin } from "lucide-react";
+import { UserAvatar } from "@/components/user-avatar";
 
 function RatingDot({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0;
@@ -27,9 +28,7 @@ export function PlayerCard({ p }: { p: PlayerWithStats }) {
       params={{ id: p.id }}
       className="flex items-center gap-4 rounded-2xl bg-card p-4 active:scale-[0.99] transition border border-border/60"
     >
-      <div className="grid place-items-center size-14 rounded-full bg-gradient-to-br from-primary to-rim text-primary-foreground text-display text-2xl font-bold shrink-0">
-        {p.username.slice(0, 1).toUpperCase()}
-      </div>
+      <UserAvatar avatarPath={p.avatar_url} fallback={p.username} className="size-14" textClassName="text-2xl" />
       <div className="flex-1 min-w-0">
         <div className="font-semibold truncate">@{p.username}</div>
         <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
