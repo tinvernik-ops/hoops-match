@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Plus, Copy, Trophy, UserPlus, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Copy, Trophy, UserPlus, Loader2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { sendPushTo } from "@/lib/push";
 
@@ -75,13 +75,20 @@ function LeagueDetail() {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-3 gap-2">
           <Link
             to="/app/leagues/$id/log"
             params={{ id }}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 font-bold"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground py-3 text-sm font-bold"
           >
-            <Plus className="size-5" /> Log game
+            <Plus className="size-4" /> Log
+          </Link>
+          <Link
+            to="/app/leagues/$id/chat"
+            params={{ id }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-secondary text-secondary-foreground py-3 text-sm font-bold"
+          >
+            <MessageSquare className="size-4" /> Chat
           </Link>
           {data.league.owner_id === user?.id ? (
             <InviteDialog leagueId={id} memberIds={data.members.map((m) => m.user_id)} />
@@ -266,8 +273,8 @@ function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: st
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="gap-2 font-bold">
-          <UserPlus className="size-5" /> Invite
+        <Button variant="secondary" className="gap-1.5 font-bold text-sm">
+          <UserPlus className="size-4" /> Invite
         </Button>
       </DialogTrigger>
       <DialogContent>
