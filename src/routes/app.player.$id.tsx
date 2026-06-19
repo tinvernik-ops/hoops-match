@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { distanceKm } from "@/lib/players";
 import { sendPushTo } from "@/lib/push";
@@ -61,6 +61,7 @@ function PlayerPage() {
         name={p.username}
         defense={data.defense}
         offense={data.offense}
+        avatarPath={(p as { avatar_url?: string | null }).avatar_url ?? null}
       />
 
       <div className="rounded-3xl bg-card p-6 text-center mt-4">
@@ -92,6 +93,13 @@ function PlayerPage() {
         </p>
 
         <div className="mt-6 space-y-2">
+          <Link
+            to="/app/messages/$userId"
+            params={{ userId: p.id }}
+            className="flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-3 font-bold"
+          >
+            <MessageSquare className="size-5" /> Message @{p.username}
+          </Link>
           <CallUpButton toId={p.id} toName={p.username} />
           {data.canRate ? (
             <RateDialog
