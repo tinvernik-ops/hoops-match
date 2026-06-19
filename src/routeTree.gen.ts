@@ -16,11 +16,14 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppDrillsRouteImport } from './routes/app.drills'
+import { Route as AppMessagesIndexRouteImport } from './routes/app.messages.index'
 import { Route as AppLeaguesIndexRouteImport } from './routes/app.leagues.index'
 import { Route as AppPlayerIdRouteImport } from './routes/app.player.$id'
+import { Route as AppMessagesUserIdRouteImport } from './routes/app.messages.$userId'
 import { Route as AppLeaguesIdRouteImport } from './routes/app.leagues.$id'
 import { Route as AppLeaguesIdIndexRouteImport } from './routes/app.leagues.$id.index'
 import { Route as AppLeaguesIdLogRouteImport } from './routes/app.leagues.$id.log'
+import { Route as AppLeaguesIdChatRouteImport } from './routes/app.leagues.$id.chat'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -57,6 +60,11 @@ const AppDrillsRoute = AppDrillsRouteImport.update({
   path: '/drills',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMessagesIndexRoute = AppMessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeaguesIndexRoute = AppLeaguesIndexRouteImport.update({
   id: '/leagues/',
   path: '/leagues/',
@@ -65,6 +73,11 @@ const AppLeaguesIndexRoute = AppLeaguesIndexRouteImport.update({
 const AppPlayerIdRoute = AppPlayerIdRouteImport.update({
   id: '/player/$id',
   path: '/player/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesUserIdRoute = AppMessagesUserIdRouteImport.update({
+  id: '/messages/$userId',
+  path: '/messages/$userId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeaguesIdRoute = AppLeaguesIdRouteImport.update({
@@ -82,6 +95,11 @@ const AppLeaguesIdLogRoute = AppLeaguesIdLogRouteImport.update({
   path: '/log',
   getParentRoute: () => AppLeaguesIdRoute,
 } as any)
+const AppLeaguesIdChatRoute = AppLeaguesIdChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppLeaguesIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -92,8 +110,11 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
+  '/app/messages/$userId': typeof AppMessagesUserIdRoute
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
+  '/app/messages/': typeof AppMessagesIndexRoute
+  '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id/': typeof AppLeaguesIdIndexRoute
 }
@@ -104,8 +125,11 @@ export interface FileRoutesByTo {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
+  '/app/messages/$userId': typeof AppMessagesUserIdRoute
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues': typeof AppLeaguesIndexRoute
+  '/app/messages': typeof AppMessagesIndexRoute
+  '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id': typeof AppLeaguesIdIndexRoute
 }
@@ -119,8 +143,11 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
+  '/app/messages/$userId': typeof AppMessagesUserIdRoute
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
+  '/app/messages/': typeof AppMessagesIndexRoute
+  '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id/': typeof AppLeaguesIdIndexRoute
 }
@@ -135,8 +162,11 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/app/leagues/$id'
+    | '/app/messages/$userId'
     | '/app/player/$id'
     | '/app/leagues/'
+    | '/app/messages/'
+    | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -147,8 +177,11 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app'
+    | '/app/messages/$userId'
     | '/app/player/$id'
     | '/app/leagues'
+    | '/app/messages'
+    | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id'
   id:
@@ -161,8 +194,11 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/app/leagues/$id'
+    | '/app/messages/$userId'
     | '/app/player/$id'
     | '/app/leagues/'
+    | '/app/messages/'
+    | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id/'
   fileRoutesById: FileRoutesById
@@ -224,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDrillsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/messages/': {
+      id: '/app/messages/'
+      path: '/messages'
+      fullPath: '/app/messages/'
+      preLoaderRoute: typeof AppMessagesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leagues/': {
       id: '/app/leagues/'
       path: '/leagues'
@@ -236,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/player/$id'
       fullPath: '/app/player/$id'
       preLoaderRoute: typeof AppPlayerIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/messages/$userId': {
+      id: '/app/messages/$userId'
+      path: '/messages/$userId'
+      fullPath: '/app/messages/$userId'
+      preLoaderRoute: typeof AppMessagesUserIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/leagues/$id': {
@@ -259,15 +309,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeaguesIdLogRouteImport
       parentRoute: typeof AppLeaguesIdRoute
     }
+    '/app/leagues/$id/chat': {
+      id: '/app/leagues/$id/chat'
+      path: '/chat'
+      fullPath: '/app/leagues/$id/chat'
+      preLoaderRoute: typeof AppLeaguesIdChatRouteImport
+      parentRoute: typeof AppLeaguesIdRoute
+    }
   }
 }
 
 interface AppLeaguesIdRouteChildren {
+  AppLeaguesIdChatRoute: typeof AppLeaguesIdChatRoute
   AppLeaguesIdLogRoute: typeof AppLeaguesIdLogRoute
   AppLeaguesIdIndexRoute: typeof AppLeaguesIdIndexRoute
 }
 
 const AppLeaguesIdRouteChildren: AppLeaguesIdRouteChildren = {
+  AppLeaguesIdChatRoute: AppLeaguesIdChatRoute,
   AppLeaguesIdLogRoute: AppLeaguesIdLogRoute,
   AppLeaguesIdIndexRoute: AppLeaguesIdIndexRoute,
 }
@@ -282,8 +341,10 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppLeaguesIdRoute: typeof AppLeaguesIdRouteWithChildren
+  AppMessagesUserIdRoute: typeof AppMessagesUserIdRoute
   AppPlayerIdRoute: typeof AppPlayerIdRoute
   AppLeaguesIndexRoute: typeof AppLeaguesIndexRoute
+  AppMessagesIndexRoute: typeof AppMessagesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -292,8 +353,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppLeaguesIdRoute: AppLeaguesIdRouteWithChildren,
+  AppMessagesUserIdRoute: AppMessagesUserIdRoute,
   AppPlayerIdRoute: AppPlayerIdRoute,
   AppLeaguesIndexRoute: AppLeaguesIndexRoute,
+  AppMessagesIndexRoute: AppMessagesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
