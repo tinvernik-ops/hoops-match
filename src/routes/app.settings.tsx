@@ -44,7 +44,7 @@ function SettingsPage() {
 
   async function saveAlertPrefs(next: { threshold?: number; alertKm?: number }) {
     if (!user) return;
-    const payload: Record<string, number> = {};
+    const payload: { court_alert_threshold?: number; court_alert_radius_km?: number } = {};
     if (next.threshold != null) payload.court_alert_threshold = next.threshold;
     if (next.alertKm != null) payload.court_alert_radius_km = next.alertKm;
     await supabase.from("profiles").update(payload).eq("id", user.id);
@@ -161,21 +161,6 @@ function RadiusSlider({
   );
 }
 
-function RadiusSlider({
-  icon, label, value, onChange,
-}: { icon: React.ReactNode; label: string; value: number; onChange: (n: number) => void }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="flex items-center gap-2 text-sm font-semibold">
-          {icon} {label}
-        </span>
-        <span className="text-display text-xl font-bold text-primary">{value} km</span>
-      </div>
-      <Slider value={[value]} min={1} max={50} step={1} onValueChange={(v) => onChange(v[0])} />
-    </div>
-  );
-}
 
 function ThemeOption({
   label, icon, active, onClick,
