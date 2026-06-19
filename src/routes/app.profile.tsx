@@ -126,14 +126,28 @@ function ProfilePage() {
         </Link>
       </header>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <StatBarCard
           initial={(profile?.username ?? "H").slice(0, 1).toUpperCase()}
           name={profile?.username ?? ""}
           defense={profile?.defense_avg ?? null}
           offense={profile?.offense_avg ?? null}
+          avatarPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
         />
       </div>
+
+      <AvatarUploader
+        userId={user!.id}
+        currentPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
+        onUploaded={() => refetch()}
+      />
+
+      <Link
+        to="/app/messages"
+        className="mt-4 mb-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-3 font-semibold"
+      >
+        <MessageSquare className="size-5" /> Messages
+      </Link>
 
       <form onSubmit={onSave} className="space-y-4">
         <div>
