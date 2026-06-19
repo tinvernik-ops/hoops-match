@@ -218,3 +218,43 @@ function ProfilePage() {
     </main>
   );
 }
+
+function AvatarUploader({ userId, currentPath, onUploaded }: { userId: string; currentPath: string | null; onUploaded: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max 5MB");
+      return;
+    }
+    setBusy(true);
+    try {
+      await uploadAvatar(userId, file);
+      toast.success("Profile picture updated");
+      onUploaded();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onChange} />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        disabled={busy}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-secondary py-3 text-sm font-semibold"
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
+        {currentPath ? "Change profile picture" : "Add profile picture"}
+      </button>
+    </>
+  );
+}
