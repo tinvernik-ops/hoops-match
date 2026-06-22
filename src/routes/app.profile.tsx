@@ -208,6 +208,9 @@ function ProfilePage() {
       <Link to="/app/drills" className="mt-6 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-4 font-semibold">
         <Target className="size-5" /> {t("profile.shooting_drills")}
       </Link>
+      <Link to="/app/shooting-lab" className="mt-2 flex items-center justify-center gap-2 w-full rounded-xl bg-secondary py-4 font-semibold">
+        <Camera className="size-5" /> Shooting Lab (AI form)
+      </Link>
 
       <button
         onClick={signOut}

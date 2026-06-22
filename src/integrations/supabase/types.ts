@@ -527,6 +527,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shooting_sessions: {
+        Row: {
+          court_x: number
+          court_y: number
+          created_at: string
+          form_metrics: Json
+          form_score: number | null
+          id: string
+          made: boolean
+          notes: string | null
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          court_x: number
+          court_y: number
+          created_at?: string
+          form_metrics?: Json
+          form_score?: number | null
+          id?: string
+          made: boolean
+          notes?: string | null
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          court_x?: number
+          court_y?: number
+          created_at?: string
+          form_metrics?: Json
+          form_score?: number | null
+          id?: string
+          made?: boolean
+          notes?: string | null
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
