@@ -7,7 +7,10 @@ import { useRadius } from "@/hooks/use-radius";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, Sun, Moon, Check, MapPin, Users, Bell } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Check, MapPin, Users, Bell, BellOff } from "lucide-react";
+import { ensurePushSubscription } from "@/lib/push";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
@@ -35,6 +38,34 @@ function SettingsPage() {
 
   const [threshold, setThreshold] = useState(3);
   const [alertKm, setAlertKm] = useState(10);
+  const [notifState, setNotifState] = useState<"unsupported" | "default" | "granted" | "denied">("default");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      setNotifState("unsupported");
+    } else {
+      setNotifState(Notification.permission as "default" | "granted" | "denied");
+    }
+  }, []);
+
+  async function enableNotifications() {
+    if (!user) return;
+    if (notifState === "unsupported") {
+      toast.error("Notifications aren't supported in this browser / preview iframe. Open the published site.");
+      return;
+    }
+    try {
+      await ensurePushSubscription(user.id);
+      const next = Notification.permission as "default" | "granted" | "denied";
+      setNotifState(next);
+      if (next === "granted") toast.success("Notifications enabled");
+      else if (next === "denied") toast.error("You blocked notifications. Allow them in browser settings.");
+      else toast.message("Tap Allow when your browser asks.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
   useEffect(() => {
     if (prefs) {
       setThreshold(prefs.court_alert_threshold);
@@ -120,30 +151,24 @@ function SettingsPage() {
         />
       </section>
 
-      <section className="rounded-2xl bg-card p-4">
-        <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{t("settings.language")}</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {LANGUAGES.map((l) => {
-            const active = lang === l.code;
-            return (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`flex items-center gap-2 rounded-xl border-2 p-3 text-sm font-semibold transition ${
-                  active ? "border-primary bg-primary/10 text-primary" : "border-transparent bg-secondary"
-                }`}
-              >
-                <span className="text-xl">{l.flag}</span>
-                <span className="flex-1 text-left">{l.name}</span>
-                {active && <Check className="size-4" />}
-              </button>
-            );
-          })}
-        </div>
+      <section className="rounded-2xl bg-card p-4 space-y-3">
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          {notifState === "granted" ? <Bell className="size-3" /> : <BellOff className="size-3" />} Push notifications
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Status: <span className="font-semibold text-foreground">{
+            notifState === "granted" ? "Enabled ✓"
+            : notifState === "denied" ? "Blocked — change in browser settings"
+            : notifState === "unsupported" ? "Not supported in this browser / preview"
+            : "Not enabled"
+          }</span>
+        </p>
+        {notifState !== "granted" && (
+          <Button onClick={enableNotifications} disabled={notifState === "unsupported" || notifState === "denied"} className="w-full h-11 font-bold">
+            Enable notifications
+          </Button>
+        )}
       </section>
-    </main>
-  );
-}
 
 function RadiusSlider({
   icon, label, value, onChange, min = 1, max = 50, unit = "km",
