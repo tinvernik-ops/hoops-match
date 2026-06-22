@@ -170,6 +170,33 @@ function SettingsPage() {
         )}
       </section>
 
+      <section className="rounded-2xl bg-card p-4">
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">{t("settings.language")}</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {LANGUAGES.map((l) => {
+            const active = lang === l.code;
+            return (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={`flex items-center gap-2 rounded-xl border-2 p-3 text-sm font-semibold transition ${
+                  active ? "border-primary bg-primary/10 text-primary" : "border-transparent bg-secondary"
+                }`}
+              >
+                <span className="text-xl">{l.flag}</span>
+                <span className="flex-1 text-left">{l.name}</span>
+                {active && <Check className="size-4" />}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+
+
 function RadiusSlider({
   icon, label, value, onChange, min = 1, max = 50, unit = "km",
 }: { icon: React.ReactNode; label: string; value: number; onChange: (n: number) => void; min?: number; max?: number; unit?: string }) {
