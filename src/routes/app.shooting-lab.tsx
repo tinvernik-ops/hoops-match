@@ -221,16 +221,16 @@ function ShootingLabPage() {
       </header>
 
       <section className="p-4">
-        <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-black">
+        <div className="relative w-full max-h-[50vh] aspect-[3/4] mx-auto rounded-2xl overflow-hidden bg-black">
           <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" playsInline muted />
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           {!ready && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white gap-3">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white gap-3 p-4">
               <Camera className="size-10 opacity-70" />
-              <p className="text-sm opacity-80 px-6 text-center">
-                Prop your phone so your full body is visible from the side. The AI tracks your elbow, knees, and release.
+              <p className="text-xs opacity-80 text-center">
+                Prop your phone sideways. The AI tracks your elbow, knees, and release.
               </p>
-              <Button onClick={startCamera} disabled={loading} size="lg">
+              <Button onClick={startCamera} disabled={loading} size="lg" className="font-bold">
                 {loading ? <Loader2 className="animate-spin" /> : "Start camera"}
               </Button>
             </div>
@@ -241,23 +241,26 @@ function ShootingLabPage() {
             </div>
           )}
         </div>
+      </section>
 
-        {ready && !analyzed && (
-          <div className="mt-3 flex gap-2">
-            {!recording ? (
-              <Button onClick={startRecording} className="flex-1 h-12 font-bold" size="lg">
-                Record shot
-              </Button>
-            ) : (
-              <Button onClick={stopRecording} variant="destructive" className="flex-1 h-12 font-bold" size="lg">
-                <Square className="size-4 mr-2" /> Stop & analyze
-              </Button>
-            )}
-          </div>
-        )}
+      {/* Sticky action bar — always visible above bottom tab nav */}
+      {ready && !analyzed && (
+        <div className="sticky bottom-20 z-20 px-4">
+          {!recording ? (
+            <Button onClick={startRecording} className="w-full h-14 font-black text-base shadow-lg" size="lg">
+              ● Record shot
+            </Button>
+          ) : (
+            <Button onClick={stopRecording} variant="destructive" className="w-full h-14 font-black text-base shadow-lg" size="lg">
+              <Square className="size-5 mr-2" /> Stop & analyze
+            </Button>
+          )}
+        </div>
+      )}
 
-        {analyzed && (
-          <div className="mt-4 rounded-2xl border border-border p-4 bg-card">
+      {analyzed && (
+        <section className="px-4">
+          <div className="rounded-2xl border border-border p-4 bg-card">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-bold">Form analysis</h2>
               <div className={`text-2xl font-black ${analyzed.score >= 75 ? "text-green-500" : analyzed.score >= 50 ? "text-yellow-500" : "text-red-500"}`}>
@@ -291,8 +294,8 @@ function ShootingLabPage() {
               Discard this shot
             </button>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="px-4 mt-6">
         <h2 className="font-bold mb-2">Shot chart</h2>
