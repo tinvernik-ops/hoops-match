@@ -190,7 +190,7 @@ function ShootingLabPage() {
       made,
       court_x: pendingTag.x,
       court_y: pendingTag.y,
-      form_metrics: analyzed.metrics as unknown as Record<string, unknown>,
+      form_metrics: JSON.parse(JSON.stringify(analyzed.metrics)),
       form_score: analyzed.score,
       notes: analyzed.notes.join(" • "),
     });

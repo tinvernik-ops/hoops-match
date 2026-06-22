@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppShootingLabRouteImport } from './routes/app.shooting-lab'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppDrillsRouteImport } from './routes/app.drills'
@@ -43,6 +44,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppShootingLabRoute = AppShootingLabRouteImport.update({
+  id: '/shooting-lab',
+  path: '/shooting-lab',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/shooting-lab': typeof AppShootingLabRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/shooting-lab': typeof AppShootingLabRoute
   '/app': typeof AppIndexRoute
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
   '/app/player/$id': typeof AppPlayerIdRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/app/drills': typeof AppDrillsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/shooting-lab': typeof AppShootingLabRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/app/drills'
     | '/app/profile'
     | '/app/settings'
+    | '/app/shooting-lab'
     | '/app/'
     | '/app/leagues/$id'
     | '/app/messages/$userId'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/app/drills'
     | '/app/profile'
     | '/app/settings'
+    | '/app/shooting-lab'
     | '/app'
     | '/app/messages/$userId'
     | '/app/player/$id'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/app/drills'
     | '/app/profile'
     | '/app/settings'
+    | '/app/shooting-lab'
     | '/app/'
     | '/app/leagues/$id'
     | '/app/messages/$userId'
@@ -237,6 +249,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/shooting-lab': {
+      id: '/app/shooting-lab'
+      path: '/shooting-lab'
+      fullPath: '/app/shooting-lab'
+      preLoaderRoute: typeof AppShootingLabRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/settings': {
@@ -339,6 +358,7 @@ interface AppRouteChildren {
   AppDrillsRoute: typeof AppDrillsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppShootingLabRoute: typeof AppShootingLabRoute
   AppIndexRoute: typeof AppIndexRoute
   AppLeaguesIdRoute: typeof AppLeaguesIdRouteWithChildren
   AppMessagesUserIdRoute: typeof AppMessagesUserIdRoute
@@ -351,6 +371,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDrillsRoute: AppDrillsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppShootingLabRoute: AppShootingLabRoute,
   AppIndexRoute: AppIndexRoute,
   AppLeaguesIdRoute: AppLeaguesIdRouteWithChildren,
   AppMessagesUserIdRoute: AppMessagesUserIdRoute,
