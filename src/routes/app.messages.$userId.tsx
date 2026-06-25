@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { fetchThread, markThreadRead, sendDirectMessage } from "@/lib/messages";
 import { sendPushTo } from "@/lib/push";
 import { UserAvatar } from "@/components/user-avatar";
