@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchLeagueData, buildLeaderboard, buildTeamRecords, type GameType } from "@/lib/leagues";
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
