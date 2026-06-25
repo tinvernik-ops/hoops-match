@@ -152,6 +152,64 @@ export type Database = {
           },
         ]
       }
+      game_verifications: {
+        Row: {
+          created_at: string
+          dispute_note: string | null
+          game_id: string
+          id: string
+          responded_at: string | null
+          score_status: Database["public"]["Enums"]["verify_status"]
+          stats_status: Database["public"]["Enums"]["stats_verify_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_note?: string | null
+          game_id: string
+          id?: string
+          responded_at?: string | null
+          score_status?: Database["public"]["Enums"]["verify_status"]
+          stats_status?: Database["public"]["Enums"]["stats_verify_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dispute_note?: string | null
+          game_id?: string
+          id?: string
+          responded_at?: string | null
+          score_status?: Database["public"]["Enums"]["verify_status"]
+          stats_status?: Database["public"]["Enums"]["stats_verify_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_verifications_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       games: {
         Row: {
           created_at: string
@@ -671,7 +729,9 @@ export type Database = {
       game_type: "1v1" | "2v2" | "3v3" | "4v4" | "5v5" | "koth"
       invite_status: "pending" | "accepted" | "declined" | "cancelled"
       league_invite_status: "pending" | "accepted" | "declined"
+      stats_verify_status: "pending" | "approved" | "disputed" | "skipped"
       team_side: "A" | "B"
+      verify_status: "pending" | "approved" | "disputed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -802,7 +862,9 @@ export const Constants = {
       game_type: ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"],
       invite_status: ["pending", "accepted", "declined", "cancelled"],
       league_invite_status: ["pending", "accepted", "declined"],
+      stats_verify_status: ["pending", "approved", "disputed", "skipped"],
       team_side: ["A", "B"],
+      verify_status: ["pending", "approved", "disputed"],
     },
   },
 } as const
