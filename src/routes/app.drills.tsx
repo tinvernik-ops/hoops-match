@@ -81,7 +81,10 @@ function DrillsPage() {
   }, [drills]);
 
   function setEntry(id: string, patch: Partial<Entry>) {
-    setEntries((e) => ({ ...e, [id]: { made: "", att: "", ...e[id], ...patch } }));
+    setEntries((e) => {
+      const cur = e[id] ?? { made: "", att: "" };
+      return { ...e, [id]: { ...cur, ...patch } };
+    });
   }
 
   async function logSession() {
