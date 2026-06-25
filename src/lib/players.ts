@@ -1,9 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 
 export type PlayerRow = {
   id: string;
   username: string;
-  phone: string;
   height_cm: number | null;
   lat: number | null;
   lng: number | null;
@@ -29,12 +29,16 @@ export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; ln
 }
 
 export async function fetchPlayersWithStats(currentUserId: string, me: { lat: number; lng: number } | null) {
-  const [{ data: profiles, error: pErr }, { data: ratings, error: rErr }] = await Promise.all([
-    supabase.from("profiles").select("id,username,phone,height_cm,lat,lng,avatar_url").neq("id", currentUserId),
+  const [profilesRes, ratingsRes] = await Promise.all([
+    fromPublicProfiles<PlayerRow>()
+      .select("id,username,height_cm,lat,lng,avatar_url")
+      .neq("id", currentUserId),
     supabase.from("ratings").select("ratee_id,offense,defense"),
   ]);
-  if (pErr) throw pErr;
-  if (rErr) throw rErr;
+  if (profilesRes.error) throw profilesRes.error;
+  if (ratingsRes.error) throw ratingsRes.error;
+  const profiles = profilesRes.data;
+  const ratings = ratingsRes.data;
 
   const stats = new Map<string, { o: number; d: number; n: number }>();
   for (const r of ratings ?? []) {

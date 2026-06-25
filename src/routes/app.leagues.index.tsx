@@ -1,7 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
+import { joinLeagueByCode } from "@/lib/league-join.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchMyLeagues } from "@/lib/leagues";
 import { Button } from "@/components/ui/button";
