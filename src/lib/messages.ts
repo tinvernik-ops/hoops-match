@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 
 export type DirectMessage = {
   id: string;
@@ -59,8 +60,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
   const ids = [...byOther.keys()];
   if (ids.length === 0) return [];
 
-  const { data: profiles } = await supabase
-    .from("profiles")
+  const { data: profiles } = await fromPublicProfiles<{ id: string; username: string; avatar_url: string | null }>()
     .select("id, username, avatar_url")
     .in("id", ids);
 
@@ -111,21 +111,30 @@ export async function markThreadRead(meId: string, otherId: string) {
 export async function fetchLeagueMessages(leagueId: string): Promise<(LeagueMessage & { username: string; avatar_url: string | null })[]> {
   const { data, error } = await supabase
     .from("league_messages")
-    .select("id, league_id, user_id, body, created_at, profiles!inner(username, avatar_url)")
+    .select("id, league_id, user_id, body, created_at")
     .eq("league_id", leagueId)
     .order("created_at", { ascending: true })
     .limit(500);
   if (error) throw error;
-  return (data ?? []).map((m) => {
-    const prof = (m as unknown as { profiles: { username: string; avatar_url: string | null } }).profiles;
+  const rows = data ?? [];
+  const ids = [...new Set(rows.map((r) => r.user_id))];
+  let profMap = new Map<string, { username: string; avatar_url: string | null }>();
+  if (ids.length > 0) {
+    const { data: profs } = await fromPublicProfiles<{ id: string; username: string; avatar_url: string | null }>()
+      .select("id, username, avatar_url")
+      .in("id", ids);
+    profMap = new Map((profs ?? []).map((p) => [p.id, { username: p.username, avatar_url: p.avatar_url }]));
+  }
+  return rows.map((m) => {
+    const p = profMap.get(m.user_id);
     return {
       id: m.id,
       league_id: m.league_id,
       user_id: m.user_id,
       body: m.body,
       created_at: m.created_at,
-      username: prof?.username ?? "",
-      avatar_url: prof?.avatar_url ?? null,
+      username: p?.username ?? "",
+      avatar_url: p?.avatar_url ?? null,
     };
   });
 }

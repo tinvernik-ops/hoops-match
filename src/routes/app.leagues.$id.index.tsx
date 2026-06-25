@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchLeagueData, buildLeaderboard, buildTeamRecords, type GameType } from "@/lib/leagues";
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -243,8 +244,7 @@ function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: st
     queryFn: async () => {
       const term = q.trim();
       if (term.length < 2) return [] as Array<{ id: string; username: string }>;
-      const { data, error } = await supabase
-        .from("profiles")
+      const { data, error } = await fromPublicProfiles<{ id: string; username: string }>()
         .select("id, username")
         .ilike("username", `%${term}%`)
         .limit(10);

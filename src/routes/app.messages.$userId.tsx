@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { fetchThread, markThreadRead, sendDirectMessage } from "@/lib/messages";
 import { sendPushTo } from "@/lib/push";
 import { UserAvatar } from "@/components/user-avatar";
@@ -22,12 +23,11 @@ function DMThread() {
   const { data: other } = useQuery({
     queryKey: ["profile-mini", otherId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
+      const { data } = await fromPublicProfiles<{ id: string; username: string; avatar_url: string | null }>()
         .select("id, username, avatar_url")
         .eq("id", otherId)
         .maybeSingle();
-      return data as { id: string; username: string; avatar_url: string | null } | null;
+      return data;
     },
   });
 

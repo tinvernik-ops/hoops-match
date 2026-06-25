@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 
 export type LeagueRow = {
   id: string;
@@ -79,16 +80,24 @@ export type TeamRecord = {
 export async function fetchLeagueData(leagueId: string) {
   const [{ data: league, error: lErr }, { data: members, error: mErr }, { data: games, error: gErr }] = await Promise.all([
     supabase.from("leagues").select("*").eq("id", leagueId).maybeSingle(),
-    supabase.from("league_members").select("user_id, profiles!inner(username)").eq("league_id", leagueId),
+    supabase.from("league_members").select("user_id").eq("league_id", leagueId),
     supabase.from("games").select("*").eq("league_id", leagueId).order("played_at", { ascending: false }),
   ]);
   if (lErr) throw lErr;
   if (mErr) throw mErr;
   if (gErr) throw gErr;
 
-  const memberList: Member[] = (members ?? []).map((m: { user_id: string; profiles: { username: string } | null }) => ({
-    user_id: m.user_id,
-    username: m.profiles?.username ?? "?",
+  const memberIds = (members ?? []).map((m) => m.user_id);
+  let usernameById = new Map<string, string>();
+  if (memberIds.length > 0) {
+    const { data: profs } = await fromPublicProfiles<{ id: string; username: string }>()
+      .select("id, username")
+      .in("id", memberIds);
+    usernameById = new Map((profs ?? []).map((p) => [p.id, p.username]));
+  }
+  const memberList: Member[] = memberIds.map((uid) => ({
+    user_id: uid,
+    username: usernameById.get(uid) ?? "?",
   }));
 
   let gamePlayers: GamePlayerRow[] = [];
