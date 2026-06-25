@@ -35,7 +35,7 @@ export function ChatShell({
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-background">
+    <div className="fixed inset-0 z-40 flex flex-col bg-background pb-20">
       <div className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto w-full max-w-md px-4 py-3">{header}</div>
       </div>
