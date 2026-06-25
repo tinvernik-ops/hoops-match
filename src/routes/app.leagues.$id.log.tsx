@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import type { GameType } from "@/lib/leagues";
+import { sendPushTo } from "@/lib/push";
 
 const GAME_TYPES: GameType[] = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"];
 const GAME_TYPE_LABELS: Record<GameType, string> = {
@@ -100,7 +101,23 @@ function LogGamePage() {
       toast.error(gpErr.message);
       return;
     }
-    toast.success("Game logged 🏀");
+    // Notify every other player to verify the score
+    const winner = scoreA === scoreB ? "Tied" : scoreA > scoreB ? "Team A won" : "Team B won";
+    const body = `${winner} ${scoreA}-${scoreB} · tap to verify the score`;
+    await Promise.all(
+      lines
+        .filter((l) => l.user_id !== user.id)
+        .map((l) =>
+          sendPushTo({
+            toUserId: l.user_id,
+            title: "Verify game score",
+            body,
+            url: `/app/games/${game.id}/verify`,
+            tag: `verify-${game.id}`,
+          })
+        )
+    );
+    toast.success("Game logged — players notified to verify");
     nav({ to: "/app/leagues/$id", params: { id } });
   }
 
