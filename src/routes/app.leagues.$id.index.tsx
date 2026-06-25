@@ -244,8 +244,7 @@ function InviteDialog({ leagueId, memberIds }: { leagueId: string; memberIds: st
     queryFn: async () => {
       const term = q.trim();
       if (term.length < 2) return [] as Array<{ id: string; username: string }>;
-      const { data, error } = await supabase
-        .from("profiles")
+      const { data, error } = await fromPublicProfiles<{ id: string; username: string }>()
         .select("id, username")
         .ilike("username", `%${term}%`)
         .limit(10);
