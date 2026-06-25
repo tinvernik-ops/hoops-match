@@ -27,7 +27,7 @@ function PlayerPage() {
     queryKey: ["player", id, user?.id],
     queryFn: async () => {
       const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }, { data: canRate }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+        fromPublicProfiles<PublicProfile>().select("id, username, avatar_url, height_cm, lat, lng, playstyle, preferred_game_type").eq("id", id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", id),
         supabase.from("ratings").select("offense,defense").eq("rater_id", user!.id).eq("ratee_id", id).maybeSingle(),
         supabase.from("profiles").select("lat,lng").eq("id", user!.id).maybeSingle(),
