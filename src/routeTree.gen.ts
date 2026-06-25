@@ -25,6 +25,7 @@ import { Route as AppLeaguesIdRouteImport } from './routes/app.leagues.$id'
 import { Route as AppLeaguesIdIndexRouteImport } from './routes/app.leagues.$id.index'
 import { Route as AppLeaguesIdLogRouteImport } from './routes/app.leagues.$id.log'
 import { Route as AppLeaguesIdChatRouteImport } from './routes/app.leagues.$id.chat'
+import { Route as AppGamesGameIdVerifyRouteImport } from './routes/app.games.$gameId.verify'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -106,6 +107,11 @@ const AppLeaguesIdChatRoute = AppLeaguesIdChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AppLeaguesIdRoute,
 } as any)
+const AppGamesGameIdVerifyRoute = AppGamesGameIdVerifyRouteImport.update({
+  id: '/games/$gameId/verify',
+  path: '/games/$gameId/verify',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
   '/app/messages/': typeof AppMessagesIndexRoute
+  '/app/games/$gameId/verify': typeof AppGamesGameIdVerifyRoute
   '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id/': typeof AppLeaguesIdIndexRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues': typeof AppLeaguesIndexRoute
   '/app/messages': typeof AppMessagesIndexRoute
+  '/app/games/$gameId/verify': typeof AppGamesGameIdVerifyRoute
   '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id': typeof AppLeaguesIdIndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/app/player/$id': typeof AppPlayerIdRoute
   '/app/leagues/': typeof AppLeaguesIndexRoute
   '/app/messages/': typeof AppMessagesIndexRoute
+  '/app/games/$gameId/verify': typeof AppGamesGameIdVerifyRoute
   '/app/leagues/$id/chat': typeof AppLeaguesIdChatRoute
   '/app/leagues/$id/log': typeof AppLeaguesIdLogRoute
   '/app/leagues/$id/': typeof AppLeaguesIdIndexRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/app/player/$id'
     | '/app/leagues/'
     | '/app/messages/'
+    | '/app/games/$gameId/verify'
     | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id/'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/app/player/$id'
     | '/app/leagues'
     | '/app/messages'
+    | '/app/games/$gameId/verify'
     | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/app/player/$id'
     | '/app/leagues/'
     | '/app/messages/'
+    | '/app/games/$gameId/verify'
     | '/app/leagues/$id/chat'
     | '/app/leagues/$id/log'
     | '/app/leagues/$id/'
@@ -335,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeaguesIdChatRouteImport
       parentRoute: typeof AppLeaguesIdRoute
     }
+    '/app/games/$gameId/verify': {
+      id: '/app/games/$gameId/verify'
+      path: '/games/$gameId/verify'
+      fullPath: '/app/games/$gameId/verify'
+      preLoaderRoute: typeof AppGamesGameIdVerifyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -365,6 +384,7 @@ interface AppRouteChildren {
   AppPlayerIdRoute: typeof AppPlayerIdRoute
   AppLeaguesIndexRoute: typeof AppLeaguesIndexRoute
   AppMessagesIndexRoute: typeof AppMessagesIndexRoute
+  AppGamesGameIdVerifyRoute: typeof AppGamesGameIdVerifyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -378,6 +398,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPlayerIdRoute: AppPlayerIdRoute,
   AppLeaguesIndexRoute: AppLeaguesIndexRoute,
   AppMessagesIndexRoute: AppMessagesIndexRoute,
+  AppGamesGameIdVerifyRoute: AppGamesGameIdVerifyRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
