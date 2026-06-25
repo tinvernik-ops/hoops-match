@@ -23,12 +23,11 @@ function DMThread() {
   const { data: other } = useQuery({
     queryKey: ["profile-mini", otherId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
+      const { data } = await fromPublicProfiles<{ id: string; username: string; avatar_url: string | null }>()
         .select("id, username, avatar_url")
         .eq("id", otherId)
         .maybeSingle();
-      return data as { id: string; username: string; avatar_url: string | null } | null;
+      return data;
     },
   });
 
