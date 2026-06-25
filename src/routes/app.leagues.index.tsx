@@ -43,7 +43,7 @@ function LeaguesIndex() {
       const fromIds = [...new Set(list.map((i) => i.from_id))];
       const [{ data: lgs }, { data: profs }] = await Promise.all([
         supabase.from("leagues").select("id, name").in("id", leagueIds),
-        supabase.from("profiles").select("id, username").in("id", fromIds),
+        fromPublicProfiles<{ id: string; username: string }>().select("id, username").in("id", fromIds),
       ]);
       const lMap = new Map((lgs ?? []).map((l) => [l.id, l.name]));
       const pMap = new Map((profs ?? []).map((p) => [p.id, p.username]));
