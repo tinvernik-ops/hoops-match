@@ -10,7 +10,7 @@ import { fetchCourts, clusterPlayersAtCourts, createCourt, type CourtWithCount }
 import { PlayerCard } from "@/components/player-card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink, MessageSquare } from "lucide-react";
+import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink, MessageSquare, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +83,7 @@ function CourtPage() {
               {notifEnabled ? <Bell className="size-3" /> : <BellOff className="size-3" />}
               {notifEnabled ? t("home.on") : t("home.off")}
             </span>
+            <VerifyButton />
             <InboxButton />
           </div>
         </div>
@@ -300,6 +301,51 @@ function InboxButton() {
           {unread > 9 ? "9+" : unread}
         </span>
       )}
+    </Link>
+  );
+}
+
+function VerifyButton() {
+  const { user } = useAuth();
+  const { data: pending = [], refetch } = useQuery({
+    queryKey: ["pending-verifs", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("game_verifications")
+        .select("game_id")
+        .eq("user_id", user!.id)
+        .eq("score_status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel("verif-badge")
+      .on("postgres_changes", { event: "*", schema: "public", table: "game_verifications", filter: `user_id=eq.${user.id}` }, () => refetch())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, refetch]);
+
+  const count = pending.length;
+  const next = pending[0]?.game_id;
+  if (count === 0 || !next) return null;
+
+  return (
+    <Link
+      to="/app/games/$gameId/verify"
+      params={{ gameId: next }}
+      className="relative grid place-items-center size-9 rounded-full bg-primary/15 text-primary"
+      aria-label="Verify game"
+    >
+      <ShieldAlert className="size-4" />
+      <span className="absolute -top-1 -right-1 grid place-items-center min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+        {count > 9 ? "9+" : count}
+      </span>
     </Link>
   );
 }
