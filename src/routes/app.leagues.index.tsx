@@ -198,33 +198,29 @@ function JoinLeagueDialog({ onJoined }: { onJoined: () => void }) {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const joinFn = useServerFn(joinLeagueByCode);
 
   async function join() {
     if (!user) return;
     const c = code.trim().toUpperCase();
     if (c.length < 4) { toast.error(t("leagues.invalid_code")); return; }
     setBusy(true);
-    const { data: league, error } = await supabase
-      .from("leagues").select("id").eq("join_code", c).maybeSingle();
-    if (error || !league) {
+    try {
+      const { leagueId } = await joinFn({ data: { code: c } });
+      setOpen(false);
+      setCode("");
+      onJoined();
+      toast.success(t("leagues.joined"));
+      nav({ to: "/app/leagues/$id", params: { id: leagueId } });
+    } catch (e) {
+      const msg = (e as Error).message || "";
+      toast.error(/not found/i.test(msg) ? t("leagues.not_found") : msg);
+    } finally {
       setBusy(false);
-      toast.error(t("leagues.not_found"));
-      return;
     }
-    const { error: jErr } = await supabase
-      .from("league_members")
-      .insert({ league_id: league.id, user_id: user.id });
-    setBusy(false);
-    if (jErr && !jErr.message.includes("duplicate")) {
-      toast.error(jErr.message);
-      return;
-    }
-    setOpen(false);
-    setCode("");
-    onJoined();
-    toast.success(t("leagues.joined"));
-    nav({ to: "/app/leagues/$id", params: { id: league.id } });
   }
+
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
