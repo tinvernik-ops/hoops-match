@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@tanstack/react-router";
+import { InstallButton } from "@/components/install-button";
 
 export const Route = createFileRoute("/app/")({
   component: CourtPage,
@@ -83,6 +84,7 @@ function CourtPage() {
               {notifEnabled ? <Bell className="size-3" /> : <BellOff className="size-3" />}
               {notifEnabled ? t("home.on") : t("home.off")}
             </span>
+            <InstallButton />
             <VerifyButton />
             <InboxButton />
           </div>
