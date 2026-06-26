@@ -173,10 +173,22 @@ function DrillsPage() {
         <ArrowLeft className="size-4" /> Profile
       </button>
 
-      <h1 className="text-display text-3xl font-bold">Shooting drills</h1>
-      <p className="text-xs text-muted-foreground mb-4">
-        Log one session covering every spot you shot from — private to you.
-      </p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-display text-3xl font-bold">Shooting drills</h1>
+          <p className="text-xs text-muted-foreground mb-4">
+            Log one session covering every spot you shot from — private to you.
+          </p>
+        </div>
+        <div className="rating-ring grid place-items-center size-16 rounded-full shrink-0 mb-4" style={{ ["--p" as string]: String(overallRating ?? 0) }}>
+          <div className="grid place-items-center size-[3.25rem] rounded-full bg-card text-center">
+            <div>
+              <div className="text-display text-xl font-bold leading-none text-primary">{overallRating ?? "—"}</div>
+              <div className="text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">Shot rtg</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-2xl bg-card p-3">
         <svg viewBox="0 0 100 100" className="w-full aspect-square select-none">
