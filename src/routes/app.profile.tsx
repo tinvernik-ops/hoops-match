@@ -141,6 +141,22 @@ function ProfilePage() {
         />
       </div>
 
+      {profile?.shot_rating != null && (
+        <Link to="/app/drills" className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
+          <div className="rating-ring grid place-items-center size-14 rounded-full shrink-0" style={{ ["--p" as string]: String(profile.shot_rating) }}>
+            <div className="grid place-items-center size-11 rounded-full bg-card">
+              <span className="text-display text-lg font-bold text-primary">{profile.shot_rating}</span>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Shot rating</div>
+            <div className="font-semibold">Updated after every drill session</div>
+          </div>
+          <Target className="size-5 text-muted-foreground" />
+        </Link>
+      )}
+      </div>
+
       <AvatarUploader
         userId={user!.id}
         currentPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
