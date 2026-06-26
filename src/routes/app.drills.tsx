@@ -64,6 +64,15 @@ function DrillsPage() {
     return map;
   }, [drills]);
 
+  // Overall shooting rating 35–99 based on aggregate make %.
+  const overallRating = useMemo(() => {
+    let m = 0, a = 0;
+    for (const v of totals.values()) { m += v.makes; a += v.attempts; }
+    if (a === 0) return null;
+    const pct = m / a;
+    return Math.round(35 + pct * 64);
+  }, [totals]);
+
   // Group history rows that were inserted together into "sessions" by created_at
   const sessions = useMemo(() => {
     const map = new Map<string, typeof drills>();
@@ -76,7 +85,9 @@ function DrillsPage() {
     return Array.from(map.entries()).map(([ts, rows]) => {
       const makes = rows!.reduce((s, r) => s + r.makes, 0);
       const attempts = rows!.reduce((s, r) => s + r.attempts, 0);
-      return { ts, rows: rows!, makes, attempts };
+      const pct = attempts ? makes / attempts : 0;
+      const rating = attempts ? Math.round(35 + pct * 64) : null;
+      return { ts, rows: rows!, makes, attempts, rating };
     });
   }, [drills]);
 
