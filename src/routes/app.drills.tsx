@@ -297,6 +297,12 @@ function DrillsPage() {
                     {new Date(s.ts).toLocaleString()} · {s.rows.length} zone{s.rows.length > 1 ? "s" : ""}
                   </div>
                 </div>
+                {s.rating != null && (
+                  <div className="text-right shrink-0">
+                    <div className="text-display text-xl font-bold text-primary leading-none">{s.rating}</div>
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">rating</div>
+                  </div>
+                )}
                 <button onClick={() => removeSession(s.ts)} className="text-muted-foreground p-2" aria-label="Delete session">
                   <Trash2 className="size-4" />
                 </button>
