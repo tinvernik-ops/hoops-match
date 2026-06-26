@@ -125,13 +125,15 @@ function LeagueDetail() {
 
       <Tabs defaultValue="leaderboard">
         <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="leaderboard">Players</TabsTrigger>
-          <TabsTrigger value="teams" disabled={filter === "koth"}>Teams</TabsTrigger>
+          <TabsTrigger value="leaderboard">{filter === "1v1" ? "Record" : "Players"}</TabsTrigger>
+          <TabsTrigger value="teams" disabled={filter === "koth" || filter === "1v1"}>Teams</TabsTrigger>
           <TabsTrigger value="games">Games</TabsTrigger>
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <PlayerLeaderboard rows={leaderboard} />
+          {filter === "1v1"
+            ? <RecordLeaderboard rows={leaderboard} />
+            : <PlayerLeaderboard rows={leaderboard} />}
         </TabsContent>
         <TabsContent value="teams">
           <TeamLeaderboard rows={teams} />
