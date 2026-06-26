@@ -64,6 +64,15 @@ function DrillsPage() {
     return map;
   }, [drills]);
 
+  // Overall shooting rating 35–99 based on aggregate make %.
+  const overallRating = useMemo(() => {
+    let m = 0, a = 0;
+    for (const v of totals.values()) { m += v.makes; a += v.attempts; }
+    if (a === 0) return null;
+    const pct = m / a;
+    return Math.round(35 + pct * 64);
+  }, [totals]);
+
   // Group history rows that were inserted together into "sessions" by created_at
   const sessions = useMemo(() => {
     const map = new Map<string, typeof drills>();
@@ -76,7 +85,9 @@ function DrillsPage() {
     return Array.from(map.entries()).map(([ts, rows]) => {
       const makes = rows!.reduce((s, r) => s + r.makes, 0);
       const attempts = rows!.reduce((s, r) => s + r.attempts, 0);
-      return { ts, rows: rows!, makes, attempts };
+      const pct = attempts ? makes / attempts : 0;
+      const rating = attempts ? Math.round(35 + pct * 64) : null;
+      return { ts, rows: rows!, makes, attempts, rating };
     });
   }, [drills]);
 
@@ -162,10 +173,22 @@ function DrillsPage() {
         <ArrowLeft className="size-4" /> Profile
       </button>
 
-      <h1 className="text-display text-3xl font-bold">Shooting drills</h1>
-      <p className="text-xs text-muted-foreground mb-4">
-        Log one session covering every spot you shot from — private to you.
-      </p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-display text-3xl font-bold">Shooting drills</h1>
+          <p className="text-xs text-muted-foreground mb-4">
+            Log one session covering every spot you shot from — private to you.
+          </p>
+        </div>
+        <div className="rating-ring grid place-items-center size-16 rounded-full shrink-0 mb-4" style={{ ["--p" as string]: String(overallRating ?? 0) }}>
+          <div className="grid place-items-center size-[3.25rem] rounded-full bg-card text-center">
+            <div>
+              <div className="text-display text-xl font-bold leading-none text-primary">{overallRating ?? "—"}</div>
+              <div className="text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">Shot rtg</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-2xl bg-card p-3">
         <svg viewBox="0 0 100 100" className="w-full aspect-square select-none">
@@ -274,6 +297,12 @@ function DrillsPage() {
                     {new Date(s.ts).toLocaleString()} · {s.rows.length} zone{s.rows.length > 1 ? "s" : ""}
                   </div>
                 </div>
+                {s.rating != null && (
+                  <div className="text-right shrink-0">
+                    <div className="text-display text-xl font-bold text-primary leading-none">{s.rating}</div>
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">rating</div>
+                  </div>
+                )}
                 <button onClick={() => removeSession(s.ts)} className="text-muted-foreground p-2" aria-label="Delete session">
                   <Trash2 className="size-4" />
                 </button>

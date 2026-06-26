@@ -125,13 +125,15 @@ function LeagueDetail() {
 
       <Tabs defaultValue="leaderboard">
         <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="leaderboard">Players</TabsTrigger>
-          <TabsTrigger value="teams" disabled={filter === "koth"}>Teams</TabsTrigger>
+          <TabsTrigger value="leaderboard">{filter === "1v1" ? "Record" : "Players"}</TabsTrigger>
+          <TabsTrigger value="teams" disabled={filter === "koth" || filter === "1v1"}>Teams</TabsTrigger>
           <TabsTrigger value="games">Games</TabsTrigger>
         </TabsList>
 
         <TabsContent value="leaderboard">
-          <PlayerLeaderboard rows={leaderboard} />
+          {filter === "1v1"
+            ? <RecordLeaderboard rows={leaderboard} />
+            : <PlayerLeaderboard rows={leaderboard} />}
         </TabsContent>
         <TabsContent value="teams">
           <TeamLeaderboard rows={teams} />
@@ -145,12 +147,21 @@ function LeagueDetail() {
 }
 
 function PlayerLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard> }) {
-  const [sort, setSort] = useState<"points" | "rebounds" | "assists" | "steals" | "blocks" | "wins">("points");
-  const sorted = [...rows].sort((a, b) => (b[sort] as number) - (a[sort] as number));
+  type StatKey = "points" | "rebounds" | "assists" | "steals" | "blocks";
+  const [sort, setSort] = useState<StatKey | "wins">("points");
+  const perGame = (r: ReturnType<typeof buildLeaderboard>[number], k: StatKey) =>
+    r.games > 0 ? (r[k] as number) / r.games : 0;
+  const sortVal = (r: ReturnType<typeof buildLeaderboard>[number]) =>
+    sort === "wins" ? r.wins : perGame(r, sort);
+  const sorted = [...rows].sort((a, b) => sortVal(b) - sortVal(a));
 
   if (rows.length === 0) {
     return <Empty msg="No stats yet — log your first game." />;
   }
+
+  const labelFor: Record<StatKey | "wins", string> = {
+    points: "PPG", rebounds: "RPG", assists: "APG", steals: "SPG", blocks: "BPG", wins: "Wins",
+  };
 
   return (
     <div>
@@ -158,24 +169,54 @@ function PlayerLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard>
         {(["points", "rebounds", "assists", "steals", "blocks", "wins"] as const).map((s) => (
           <button key={s} onClick={() => setSort(s)}
             className={`shrink-0 px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold ${sort === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-            {s}
+            {labelFor[s]}
           </button>
         ))}
       </div>
       <div className="space-y-2">
-        {sorted.map((r, i) => (
+        {sorted.map((r, i) => {
+          const val = sort === "wins" ? r.wins : perGame(r, sort);
+          const display = sort === "wins" ? String(val) : val.toFixed(1);
+          return (
+            <div key={r.user_id} className="flex items-center gap-3 rounded-xl bg-card p-3">
+              <div className="text-display text-2xl font-bold text-muted-foreground w-7 text-center">{i + 1}</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold truncate">@{r.username}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {r.games}G · {r.wins}-{r.losses} · {perGame(r, "points").toFixed(1)}pg / {perGame(r, "rebounds").toFixed(1)}rg / {perGame(r, "assists").toFixed(1)}ag
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-display text-2xl font-bold text-primary leading-none">{display}</div>
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">{labelFor[sort]}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RecordLeaderboard({ rows }: { rows: ReturnType<typeof buildLeaderboard> }) {
+  if (rows.length === 0) return <Empty msg="No 1v1 games yet — log your first game." />;
+  const sorted = [...rows].sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+  return (
+    <div className="space-y-2 mt-3">
+      {sorted.map((r, i) => {
+        const total = r.wins + r.losses;
+        const pct = total ? Math.round((r.wins / total) * 100) : 0;
+        return (
           <div key={r.user_id} className="flex items-center gap-3 rounded-xl bg-card p-3">
             <div className="text-display text-2xl font-bold text-muted-foreground w-7 text-center">{i + 1}</div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold truncate">@{r.username}</div>
-              <div className="text-[11px] text-muted-foreground">
-                {r.games}G · {r.wins}-{r.losses} · {r.points}p / {r.rebounds}r / {r.assists}a
-              </div>
+              <div className="text-[11px] text-muted-foreground">{total} game{total === 1 ? "" : "s"} · {pct}% win rate</div>
             </div>
-            <div className="text-display text-2xl font-bold text-primary">{r[sort]}</div>
+            <div className="text-display text-2xl font-bold text-primary shrink-0">{r.wins}-{r.losses}</div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
