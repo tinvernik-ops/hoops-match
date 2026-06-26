@@ -47,16 +47,21 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const [{ data: prof, error }, { data: ratings, error: rErr }] = await Promise.all([
+      const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
+        supabase.from("shooting_drills").select("makes,attempts").eq("user_id", user!.id),
       ]);
       if (error) throw error;
       if (rErr) throw rErr;
+      if (dErr) throw dErr;
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
-      return { ...prof!, offense_avg: offense, defense_avg: defense };
+      const totalMakes = (drills ?? []).reduce((s, d) => s + (d.makes ?? 0), 0);
+      const totalAtt = (drills ?? []).reduce((s, d) => s + (d.attempts ?? 0), 0);
+      const shot_rating = totalAtt > 0 ? Math.round(35 + (totalMakes / totalAtt) * 64) : null;
+      return { ...prof!, offense_avg: offense, defense_avg: defense, shot_rating };
     },
     enabled: !!user,
   });
