@@ -155,7 +155,6 @@ function ProfilePage() {
           <Target className="size-5 text-muted-foreground" />
         </Link>
       )}
-      </div>
 
       <AvatarUploader
         userId={user!.id}
