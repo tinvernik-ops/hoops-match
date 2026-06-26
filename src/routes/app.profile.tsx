@@ -47,16 +47,21 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const [{ data: prof, error }, { data: ratings, error: rErr }] = await Promise.all([
+      const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
+        supabase.from("shooting_drills").select("makes,attempts").eq("user_id", user!.id),
       ]);
       if (error) throw error;
       if (rErr) throw rErr;
+      if (dErr) throw dErr;
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
-      return { ...prof!, offense_avg: offense, defense_avg: defense };
+      const totalMakes = (drills ?? []).reduce((s, d) => s + (d.makes ?? 0), 0);
+      const totalAtt = (drills ?? []).reduce((s, d) => s + (d.attempts ?? 0), 0);
+      const shot_rating = totalAtt > 0 ? Math.round(35 + (totalMakes / totalAtt) * 64) : null;
+      return { ...prof!, offense_avg: offense, defense_avg: defense, shot_rating };
     },
     enabled: !!user,
   });
@@ -135,6 +140,21 @@ function ProfilePage() {
           avatarPath={(profile as { avatar_url?: string | null } | undefined)?.avatar_url ?? null}
         />
       </div>
+
+      {profile?.shot_rating != null && (
+        <Link to="/app/drills" className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
+          <div className="rating-ring grid place-items-center size-14 rounded-full shrink-0" style={{ ["--p" as string]: String(profile.shot_rating) }}>
+            <div className="grid place-items-center size-11 rounded-full bg-card">
+              <span className="text-display text-lg font-bold text-primary">{profile.shot_rating}</span>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Shot rating</div>
+            <div className="font-semibold">Updated after every drill session</div>
+          </div>
+          <Target className="size-5 text-muted-foreground" />
+        </Link>
+      )}
 
       <AvatarUploader
         userId={user!.id}
