@@ -14,6 +14,8 @@ import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
 import { useLang } from "@/hooks/use-lang";
 import { uploadAvatar } from "@/lib/avatars";
+import { splitDrillRatings } from "@/lib/shot-ratings";
+import { PlayerBadges } from "@/components/player-badges";
 
 const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
 const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
@@ -50,7 +52,7 @@ function ProfilePage() {
       const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
-        supabase.from("shooting_drills").select("makes,attempts").eq("user_id", user!.id),
+        supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
       ]);
       if (error) throw error;
       if (rErr) throw rErr;
@@ -58,12 +60,22 @@ function ProfilePage() {
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
-      const totalMakes = (drills ?? []).reduce((s, d) => s + (d.makes ?? 0), 0);
-      const totalAtt = (drills ?? []).reduce((s, d) => s + (d.attempts ?? 0), 0);
-      const shot_rating = totalAtt > 0 ? Math.round(35 + (totalMakes / totalAtt) * 64) : null;
-      return { ...prof!, offense_avg: offense, defense_avg: defense, shot_rating };
+      const split = splitDrillRatings(drills ?? []);
+      return {
+        ...prof!,
+        offense_avg: offense,
+        defense_avg: defense,
+        ratings_count: n,
+        shot_rating: split.overall,
+        three_rating: split.three,
+        mid_rating: split.mid,
+        total_attempts: split.totalAttempts,
+        three_attempts: split.threeAttempts,
+        mid_attempts: split.midAttempts,
+      };
     },
     enabled: !!user,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
