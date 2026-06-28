@@ -155,6 +155,7 @@ function DrillsPage() {
     else {
       toast.success("Session removed");
       refetch();
+      qc.invalidateQueries({ queryKey: ["my-profile", user.id] });
     }
   }
 
