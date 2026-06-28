@@ -315,3 +315,19 @@ function AvatarUploader({ userId, currentPath, onUploaded }: { userId: string; c
     </>
   );
 }
+
+function ShotSplitCard({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded-2xl bg-card p-3 border border-border/60 flex items-center gap-3">
+      <div className="rating-ring grid place-items-center size-12 rounded-full shrink-0" style={{ ["--p" as string]: String(value ?? 0) }}>
+        <div className="grid place-items-center size-9 rounded-full bg-card">
+          <span className="text-display text-sm font-bold text-primary">{value ?? "—"}</span>
+        </div>
+      </div>
+      <div className="min-w-0">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+        <div className="text-xs font-semibold">rating</div>
+      </div>
+    </div>
+  );
+}
