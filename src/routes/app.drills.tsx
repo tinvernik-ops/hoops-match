@@ -141,6 +141,7 @@ function DrillsPage() {
     setEntries({});
     toast.success(`Session logged · ${rows.length} zone${rows.length > 1 ? "s" : ""}`);
     refetch();
+    qc.invalidateQueries({ queryKey: ["my-profile", user.id] });
   }
 
   async function removeSession(ts: string) {
