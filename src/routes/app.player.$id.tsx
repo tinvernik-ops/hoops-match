@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { distanceKm } from "@/lib/players";
 import { sendPushTo } from "@/lib/push";
 import { StatBarCard } from "@/components/stat-bar-card";
+import { PlayerBadges } from "@/components/player-badges";
+import { splitDrillRatings } from "@/lib/shot-ratings";
 
 export const Route = createFileRoute("/app/player/$id")({
   component: PlayerPage,
@@ -26,12 +28,13 @@ function PlayerPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["player", id, user?.id],
     queryFn: async () => {
-      const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }, { data: canRate }] = await Promise.all([
+      const [{ data: profile, error: pErr }, { data: ratings, error: rErr }, { data: mine }, { data: me }, { data: canRate }, { data: drills }] = await Promise.all([
         fromPublicProfiles<PublicProfile>().select("id, username, avatar_url, height_cm, lat, lng, playstyle, preferred_game_type").eq("id", id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", id),
         supabase.from("ratings").select("offense,defense").eq("rater_id", user!.id).eq("ratee_id", id).maybeSingle(),
         supabase.from("profiles").select("lat,lng").eq("id", user!.id).maybeSingle(),
         supabase.rpc("can_rate", { _rater: user!.id, _ratee: id }),
+        supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", id),
       ]);
       if (pErr) throw pErr;
       if (rErr) throw rErr;
@@ -41,7 +44,8 @@ function PlayerPage() {
       const dist = profile?.lat != null && profile?.lng != null && me?.lat != null && me?.lng != null
         ? distanceKm({ lat: me.lat, lng: me.lng }, { lat: profile.lat, lng: profile.lng })
         : null;
-      return { profile, offense: o, defense: d, count: n, myRating: mine, distance: dist, canRate: !!canRate };
+      const split = splitDrillRatings(drills ?? []);
+      return { profile, offense: o, defense: d, count: n, myRating: mine, distance: dist, canRate: !!canRate, split };
     },
     enabled: !!user,
   });
