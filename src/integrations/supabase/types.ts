@@ -69,25 +69,28 @@ export type Database = {
       }
       direct_messages: {
         Row: {
-          body: string
+          body: string | null
           created_at: string
           id: string
+          image_url: string | null
           read_at: string | null
           recipient_id: string
           sender_id: string
         }
         Insert: {
-          body: string
+          body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           read_at?: string | null
           recipient_id: string
           sender_id: string
         }
         Update: {
-          body?: string
+          body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           read_at?: string | null
           recipient_id?: string
           sender_id?: string
@@ -396,23 +399,26 @@ export type Database = {
       }
       league_messages: {
         Row: {
-          body: string
+          body: string | null
           created_at: string
           id: string
+          image_url: string | null
           league_id: string
           user_id: string
         }
         Insert: {
-          body: string
+          body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           league_id: string
           user_id: string
         }
         Update: {
-          body?: string
+          body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           league_id?: string
           user_id?: string
         }
