@@ -69,6 +69,21 @@ function PlayerPage() {
         avatarPath={(p as { avatar_url?: string | null }).avatar_url ?? null}
       />
 
+      <div className="mt-4">
+        <PlayerBadges
+          offense={data.offense}
+          defense={data.defense}
+          ratingsCount={data.count}
+          shotRating={data.split.overall}
+          threeRating={data.split.three}
+          midRating={data.split.mid}
+          threeAttempts={data.split.threeAttempts}
+          midAttempts={data.split.midAttempts}
+          totalShotAttempts={data.split.totalAttempts}
+        />
+      </div>
+
+
       <div className="rounded-3xl bg-card p-6 text-center mt-4">
         <div className="text-xs text-muted-foreground flex items-center justify-center gap-2">
           <MapPin className="size-3" />
