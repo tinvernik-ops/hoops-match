@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchLeagueMessages, sendLeagueMessage } from "@/lib/messages";
+import { fetchLeagueMessages, sendLeagueMessage, uploadChatImage } from "@/lib/messages";
 import { UserAvatar } from "@/components/user-avatar";
 import { ChatShell } from "@/components/chat-shell";
+import { ChatImage } from "@/components/chat-image";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -51,6 +52,17 @@ function LeagueChat() {
     if (!user) return;
     try {
       await sendLeagueMessage(id, user.id, body);
+      refetch();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  async function sendImage(file: File) {
+    if (!user) return;
+    try {
+      const path = await uploadChatImage(user.id, file);
+      await sendLeagueMessage(id, user.id, "", path);
       refetch();
     } catch (e) {
       toast.error((e as Error).message);
