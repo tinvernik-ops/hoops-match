@@ -154,7 +154,7 @@ function ProfilePage() {
       </div>
 
       {profile?.shot_rating != null && (
-        <Link to="/app/drills" className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
+        <Link to="/app/drills" className="mb-3 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
           <div className="rating-ring grid place-items-center size-14 rounded-full shrink-0" style={{ ["--p" as string]: String(profile.shot_rating) }}>
             <div className="grid place-items-center size-11 rounded-full bg-card">
               <span className="text-display text-lg font-bold text-primary">{profile.shot_rating}</span>
@@ -167,6 +167,28 @@ function ProfilePage() {
           <Target className="size-5 text-muted-foreground" />
         </Link>
       )}
+
+      {(profile?.three_rating != null || profile?.mid_rating != null) && (
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <ShotSplitCard label="3PT" value={profile?.three_rating ?? null} />
+          <ShotSplitCard label="Mid-range" value={profile?.mid_rating ?? null} />
+        </div>
+      )}
+
+      <div className="mb-4">
+        <PlayerBadges
+          offense={profile?.offense_avg ?? null}
+          defense={profile?.defense_avg ?? null}
+          ratingsCount={profile?.ratings_count ?? 0}
+          shotRating={profile?.shot_rating ?? null}
+          threeRating={profile?.three_rating ?? null}
+          midRating={profile?.mid_rating ?? null}
+          threeAttempts={profile?.three_attempts ?? 0}
+          midAttempts={profile?.mid_attempts ?? 0}
+          totalShotAttempts={profile?.total_attempts ?? 0}
+        />
+      </div>
+
 
       <AvatarUploader
         userId={user!.id}
