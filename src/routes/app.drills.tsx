@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -34,6 +34,7 @@ type Entry = { made: string; att: string };
 
 function DrillsPage() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const nav = useNavigate();
   const [selected, setSelected] = useState<Zone>(ZONES[0]);
   const [entries, setEntries] = useState<Record<string, Entry>>({});
