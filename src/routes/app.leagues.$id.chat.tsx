@@ -83,6 +83,7 @@ function LeagueChat() {
         </div>
       }
       onSend={send}
+      onSendImage={sendImage}
       placeholder="Talk to the league…"
     >
       {messages.length === 0 ? (
@@ -98,7 +99,8 @@ function LeagueChat() {
                 <div className={`rounded-2xl px-3.5 py-2 text-sm leading-snug break-words ${
                   mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-card border border-border rounded-bl-sm"
                 }`}>
-                  <div className="whitespace-pre-wrap">{m.body}</div>
+                  {m.image_url && <ChatImage path={m.image_url} className="mb-1 rounded-lg max-h-72 w-auto" />}
+                  {m.body && <div className="whitespace-pre-wrap">{m.body}</div>}
                   <div className={`text-[10px] mt-0.5 ${mine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                     {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
