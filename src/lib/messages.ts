@@ -5,7 +5,8 @@ export type DirectMessage = {
   id: string;
   sender_id: string;
   recipient_id: string;
-  body: string;
+  body: string | null;
+  image_url: string | null;
   read_at: string | null;
   created_at: string;
 };
@@ -14,7 +15,8 @@ export type LeagueMessage = {
   id: string;
   league_id: string;
   user_id: string;
-  body: string;
+  body: string | null;
+  image_url: string | null;
   created_at: string;
 };
 
@@ -28,10 +30,35 @@ export type ConversationSummary = {
   last_from_me: boolean;
 };
 
+const CHAT_BUCKET = "chat-images";
+const SIGN_TTL = 60 * 60 * 24 * 7;
+const urlCache = new Map<string, { url: string; until: number }>();
+
+export async function getChatImageUrl(path: string | null | undefined): Promise<string | null> {
+  if (!path) return null;
+  const c = urlCache.get(path);
+  if (c && c.until > Date.now()) return c.url;
+  const { data } = await supabase.storage.from(CHAT_BUCKET).createSignedUrl(path, SIGN_TTL);
+  if (!data?.signedUrl) return null;
+  urlCache.set(path, { url: data.signedUrl, until: Date.now() + SIGN_TTL * 900 });
+  return data.signedUrl;
+}
+
+export async function uploadChatImage(userId: string, file: File): Promise<string> {
+  if (file.size > 8 * 1024 * 1024) throw new Error("Image must be under 8MB");
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase().slice(0, 4);
+  const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage
+    .from(CHAT_BUCKET)
+    .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
+  if (error) throw error;
+  return path;
+}
+
 export async function fetchConversations(userId: string): Promise<ConversationSummary[]> {
   const { data: msgs, error } = await supabase
     .from("direct_messages")
-    .select("id, sender_id, recipient_id, body, read_at, created_at")
+    .select("id, sender_id, recipient_id, body, image_url, read_at, created_at")
     .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
     .order("created_at", { ascending: false })
     .limit(500);
@@ -46,7 +73,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
         other_id: other,
         username: "",
         avatar_url: null,
-        last_body: m.body,
+        last_body: m.body && m.body.length ? m.body : (m.image_url ? "📷 Photo" : ""),
         last_at: m.created_at,
         unread: 0,
         last_from_me: m.sender_id === userId,
@@ -88,13 +115,19 @@ export async function fetchThread(meId: string, otherId: string): Promise<Direct
   return (data ?? []) as DirectMessage[];
 }
 
-export async function sendDirectMessage(senderId: string, recipientId: string, body: string) {
+export async function sendDirectMessage(
+  senderId: string,
+  recipientId: string,
+  body: string,
+  imageUrl?: string | null,
+) {
   const trimmed = body.trim().slice(0, 2000);
-  if (!trimmed) return;
+  if (!trimmed && !imageUrl) return;
   const { error } = await supabase.from("direct_messages").insert({
     sender_id: senderId,
     recipient_id: recipientId,
-    body: trimmed,
+    body: trimmed || null,
+    image_url: imageUrl ?? null,
   });
   if (error) throw error;
 }
@@ -111,7 +144,7 @@ export async function markThreadRead(meId: string, otherId: string) {
 export async function fetchLeagueMessages(leagueId: string): Promise<(LeagueMessage & { username: string; avatar_url: string | null })[]> {
   const { data, error } = await supabase
     .from("league_messages")
-    .select("id, league_id, user_id, body, created_at")
+    .select("id, league_id, user_id, body, image_url, created_at")
     .eq("league_id", leagueId)
     .order("created_at", { ascending: true })
     .limit(500);
@@ -132,6 +165,7 @@ export async function fetchLeagueMessages(leagueId: string): Promise<(LeagueMess
       league_id: m.league_id,
       user_id: m.user_id,
       body: m.body,
+      image_url: (m as { image_url: string | null }).image_url ?? null,
       created_at: m.created_at,
       username: p?.username ?? "",
       avatar_url: p?.avatar_url ?? null,
@@ -139,11 +173,16 @@ export async function fetchLeagueMessages(leagueId: string): Promise<(LeagueMess
   });
 }
 
-export async function sendLeagueMessage(leagueId: string, userId: string, body: string) {
+export async function sendLeagueMessage(
+  leagueId: string,
+  userId: string,
+  body: string,
+  imageUrl?: string | null,
+) {
   const trimmed = body.trim().slice(0, 2000);
-  if (!trimmed) return;
+  if (!trimmed && !imageUrl) return;
   const { error } = await supabase
     .from("league_messages")
-    .insert({ league_id: leagueId, user_id: userId, body: trimmed });
+    .insert({ league_id: leagueId, user_id: userId, body: trimmed || null, image_url: imageUrl ?? null });
   if (error) throw error;
 }

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fromPublicProfiles } from "@/lib/public-profiles";
-import { fetchThread, markThreadRead, sendDirectMessage } from "@/lib/messages";
+import { fetchThread, markThreadRead, sendDirectMessage, uploadChatImage } from "@/lib/messages";
 import { sendPushTo } from "@/lib/push";
 import { UserAvatar } from "@/components/user-avatar";
 import { ChatShell, MessageBubble } from "@/components/chat-shell";
@@ -78,6 +78,24 @@ function DMThread() {
     }
   }
 
+  async function sendImage(file: File) {
+    if (!user) return;
+    try {
+      const path = await uploadChatImage(user.id, file);
+      await sendDirectMessage(user.id, otherId, "", path);
+      sendPushTo({
+        toUserId: otherId,
+        title: `📷 @${user.email?.split("@")[0] ?? "someone"}`,
+        body: "Sent a photo",
+        url: `/app/messages/${user.id}`,
+        tag: `dm-${user.id}`,
+      });
+      refetch();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
   return (
     <ChatShell
       header={
@@ -93,13 +111,20 @@ function DMThread() {
         </div>
       }
       onSend={send}
+      onSendImage={sendImage}
       placeholder="Send a message…"
     >
       {messages.length === 0 ? (
         <p className="text-center text-xs text-muted-foreground py-10">Say what's up 🏀</p>
       ) : (
         messages.map((m) => (
-          <MessageBubble key={m.id} body={m.body} mine={m.sender_id === user?.id} time={m.created_at} />
+          <MessageBubble
+            key={m.id}
+            body={m.body}
+            imagePath={m.image_url}
+            mine={m.sender_id === user?.id}
+            time={m.created_at}
+          />
         ))
       )}
     </ChatShell>

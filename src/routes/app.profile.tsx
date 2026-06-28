@@ -14,6 +14,8 @@ import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
 import { useLang } from "@/hooks/use-lang";
 import { uploadAvatar } from "@/lib/avatars";
+import { splitDrillRatings } from "@/lib/shot-ratings";
+import { PlayerBadges } from "@/components/player-badges";
 
 const GAME_TYPES = ["1v1", "2v2", "3v3", "4v4", "5v5", "koth"] as const;
 const GAME_TYPE_LABELS: Record<typeof GAME_TYPES[number], string> = {
@@ -50,7 +52,7 @@ function ProfilePage() {
       const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
-        supabase.from("shooting_drills").select("makes,attempts").eq("user_id", user!.id),
+        supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
       ]);
       if (error) throw error;
       if (rErr) throw rErr;
@@ -58,12 +60,22 @@ function ProfilePage() {
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
-      const totalMakes = (drills ?? []).reduce((s, d) => s + (d.makes ?? 0), 0);
-      const totalAtt = (drills ?? []).reduce((s, d) => s + (d.attempts ?? 0), 0);
-      const shot_rating = totalAtt > 0 ? Math.round(35 + (totalMakes / totalAtt) * 64) : null;
-      return { ...prof!, offense_avg: offense, defense_avg: defense, shot_rating };
+      const split = splitDrillRatings(drills ?? []);
+      return {
+        ...prof!,
+        offense_avg: offense,
+        defense_avg: defense,
+        ratings_count: n,
+        shot_rating: split.overall,
+        three_rating: split.three,
+        mid_rating: split.mid,
+        total_attempts: split.totalAttempts,
+        three_attempts: split.threeAttempts,
+        mid_attempts: split.midAttempts,
+      };
     },
     enabled: !!user,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
@@ -142,7 +154,7 @@ function ProfilePage() {
       </div>
 
       {profile?.shot_rating != null && (
-        <Link to="/app/drills" className="mb-4 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
+        <Link to="/app/drills" className="mb-3 flex items-center gap-3 rounded-2xl bg-card p-4 border border-border/60">
           <div className="rating-ring grid place-items-center size-14 rounded-full shrink-0" style={{ ["--p" as string]: String(profile.shot_rating) }}>
             <div className="grid place-items-center size-11 rounded-full bg-card">
               <span className="text-display text-lg font-bold text-primary">{profile.shot_rating}</span>
@@ -155,6 +167,28 @@ function ProfilePage() {
           <Target className="size-5 text-muted-foreground" />
         </Link>
       )}
+
+      {(profile?.three_rating != null || profile?.mid_rating != null) && (
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <ShotSplitCard label="3PT" value={profile?.three_rating ?? null} />
+          <ShotSplitCard label="Mid-range" value={profile?.mid_rating ?? null} />
+        </div>
+      )}
+
+      <div className="mb-4">
+        <PlayerBadges
+          offense={profile?.offense_avg ?? null}
+          defense={profile?.defense_avg ?? null}
+          ratingsCount={profile?.ratings_count ?? 0}
+          shotRating={profile?.shot_rating ?? null}
+          threeRating={profile?.three_rating ?? null}
+          midRating={profile?.mid_rating ?? null}
+          threeAttempts={profile?.three_attempts ?? 0}
+          midAttempts={profile?.mid_attempts ?? 0}
+          totalShotAttempts={profile?.total_attempts ?? 0}
+        />
+      </div>
+
 
       <AvatarUploader
         userId={user!.id}
@@ -279,5 +313,21 @@ function AvatarUploader({ userId, currentPath, onUploaded }: { userId: string; c
         {currentPath ? "Change profile picture" : "Add profile picture"}
       </button>
     </>
+  );
+}
+
+function ShotSplitCard({ label, value }: { label: string; value: number | null }) {
+  return (
+    <div className="rounded-2xl bg-card p-3 border border-border/60 flex items-center gap-3">
+      <div className="rating-ring grid place-items-center size-12 rounded-full shrink-0" style={{ ["--p" as string]: String(value ?? 0) }}>
+        <div className="grid place-items-center size-9 rounded-full bg-card">
+          <span className="text-display text-sm font-bold text-primary">{value ?? "—"}</span>
+        </div>
+      </div>
+      <div className="min-w-0">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+        <div className="text-xs font-semibold">rating</div>
+      </div>
+    </div>
   );
 }
