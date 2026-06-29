@@ -8,7 +8,17 @@ export type PlayerRow = {
   lat: number | null;
   lng: number | null;
   avatar_url: string | null;
+  location_updated_at: string | null;
 };
+
+// Players whose last location ping is older than this are treated as offline:
+// we won't show them on the map or count them on a court.
+export const LOCATION_FRESH_MS = 3 * 24 * 60 * 60 * 1000;
+
+export function isLocationFresh(updatedAt: string | null | undefined): boolean {
+  if (!updatedAt) return false;
+  return Date.now() - new Date(updatedAt).getTime() <= LOCATION_FRESH_MS;
+}
 
 export type PlayerWithStats = PlayerRow & {
   offense_avg: number | null;
@@ -31,7 +41,7 @@ export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; ln
 export async function fetchPlayersWithStats(currentUserId: string, me: { lat: number; lng: number } | null) {
   const [profilesRes, ratingsRes] = await Promise.all([
     fromPublicProfiles<PlayerRow>()
-      .select("id,username,height_cm,lat,lng,avatar_url")
+      .select("id,username,height_cm,lat,lng,avatar_url,location_updated_at")
       .neq("id", currentUserId),
     supabase.from("ratings").select("ratee_id,offense,defense"),
   ]);
@@ -51,12 +61,17 @@ export async function fetchPlayersWithStats(currentUserId: string, me: { lat: nu
 
   const enriched: PlayerWithStats[] = (profiles ?? []).map((p) => {
     const s = stats.get(p.id);
+    const fresh = isLocationFresh(p.location_updated_at);
+    const lat = fresh ? p.lat : null;
+    const lng = fresh ? p.lng : null;
     return {
       ...p,
+      lat,
+      lng,
       offense_avg: s ? Math.round(s.o / s.n) : null,
       defense_avg: s ? Math.round(s.d / s.n) : null,
       rating_count: s?.n ?? 0,
-      distance_km: me && p.lat != null && p.lng != null ? distanceKm(me, { lat: p.lat, lng: p.lng }) : null,
+      distance_km: me && lat != null && lng != null ? distanceKm(me, { lat, lng }) : null,
     };
   });
 
