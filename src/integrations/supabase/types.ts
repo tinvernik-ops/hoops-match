@@ -696,6 +696,7 @@ export type Database = {
           id: string | null
           lat: number | null
           lng: number | null
+          location_updated_at: string | null
           playstyle: string | null
           preferred_game_type: string | null
           updated_at: string | null
@@ -708,6 +709,7 @@ export type Database = {
           id?: string | null
           lat?: number | null
           lng?: number | null
+          location_updated_at?: string | null
           playstyle?: string | null
           preferred_game_type?: string | null
           updated_at?: string | null
@@ -720,6 +722,7 @@ export type Database = {
           id?: string | null
           lat?: number | null
           lng?: number | null
+          location_updated_at?: string | null
           playstyle?: string | null
           preferred_game_type?: string | null
           updated_at?: string | null
