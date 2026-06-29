@@ -8,7 +8,17 @@ export type PlayerRow = {
   lat: number | null;
   lng: number | null;
   avatar_url: string | null;
+  location_updated_at: string | null;
 };
+
+// Players whose last location ping is older than this are treated as offline:
+// we won't show them on the map or count them on a court.
+export const LOCATION_FRESH_MS = 3 * 24 * 60 * 60 * 1000;
+
+export function isLocationFresh(updatedAt: string | null | undefined): boolean {
+  if (!updatedAt) return false;
+  return Date.now() - new Date(updatedAt).getTime() <= LOCATION_FRESH_MS;
+}
 
 export type PlayerWithStats = PlayerRow & {
   offense_avg: number | null;
