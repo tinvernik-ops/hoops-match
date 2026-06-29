@@ -41,7 +41,7 @@ export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; ln
 export async function fetchPlayersWithStats(currentUserId: string, me: { lat: number; lng: number } | null) {
   const [profilesRes, ratingsRes] = await Promise.all([
     fromPublicProfiles<PlayerRow>()
-      .select("id,username,height_cm,lat,lng,avatar_url")
+      .select("id,username,height_cm,lat,lng,avatar_url,location_updated_at")
       .neq("id", currentUserId),
     supabase.from("ratings").select("ratee_id,offense,defense"),
   ]);
