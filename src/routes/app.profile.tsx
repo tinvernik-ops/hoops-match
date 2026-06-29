@@ -62,7 +62,7 @@ function ProfilePage() {
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
       const split = splitDrillRatings(drills ?? []);
       return {
-        ...prof!,
+        ...(prof as Record<string, unknown>),
         offense_avg: offense,
         defense_avg: defense,
         ratings_count: n,
