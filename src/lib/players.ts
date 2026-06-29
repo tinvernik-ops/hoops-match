@@ -61,12 +61,17 @@ export async function fetchPlayersWithStats(currentUserId: string, me: { lat: nu
 
   const enriched: PlayerWithStats[] = (profiles ?? []).map((p) => {
     const s = stats.get(p.id);
+    const fresh = isLocationFresh(p.location_updated_at);
+    const lat = fresh ? p.lat : null;
+    const lng = fresh ? p.lng : null;
     return {
       ...p,
+      lat,
+      lng,
       offense_avg: s ? Math.round(s.o / s.n) : null,
       defense_avg: s ? Math.round(s.d / s.n) : null,
       rating_count: s?.n ?? 0,
-      distance_km: me && p.lat != null && p.lng != null ? distanceKm(me, { lat: p.lat, lng: p.lng }) : null,
+      distance_km: me && lat != null && lng != null ? distanceKm(me, { lat, lng }) : null,
     };
   });
 
