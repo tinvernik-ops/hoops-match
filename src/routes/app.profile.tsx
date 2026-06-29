@@ -50,7 +50,7 @@ function ProfilePage() {
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
       const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.rpc("get_my_profile").maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
         supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
       ]);
