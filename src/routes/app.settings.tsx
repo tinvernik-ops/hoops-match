@@ -26,12 +26,12 @@ function SettingsPage() {
   const { data: prefs, refetch } = useQuery({
     queryKey: ["court-alert-prefs", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("court_alert_threshold, court_alert_radius_km")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return data as { court_alert_threshold: number; court_alert_radius_km: number } | null;
+      const { data } = await supabase.rpc("get_my_profile").maybeSingle();
+      if (!data) return null;
+      return {
+        court_alert_threshold: (data as { court_alert_threshold: number }).court_alert_threshold,
+        court_alert_radius_km: (data as { court_alert_radius_km: number }).court_alert_radius_km,
+      };
     },
     enabled: !!user,
   });

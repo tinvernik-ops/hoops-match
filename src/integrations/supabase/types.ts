@@ -733,6 +733,33 @@ export type Database = {
     }
     Functions: {
       can_rate: { Args: { _ratee: string; _rater: string }; Returns: boolean }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          avatar_url: string | null
+          court_alert_radius_km: number
+          court_alert_threshold: number
+          created_at: string
+          height_cm: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          location_updated_at: string | null
+          phone: string
+          playstyle: string | null
+          preferred_game_type: string | null
+          updated_at: string
+          username: string
+          vertical_cm: number | null
+          weight_kg: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       game_type: "1v1" | "2v2" | "3v3" | "4v4" | "5v5" | "koth"
