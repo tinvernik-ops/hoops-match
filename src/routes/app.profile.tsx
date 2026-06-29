@@ -49,11 +49,12 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const [{ data: prof, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
+      const [{ data: profRaw, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
         supabase.rpc("get_my_profile").maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
         supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
       ]);
+      const prof = profRaw as unknown as Database["public"]["Tables"]["profiles"]["Row"] | null;
       if (error) throw error;
       if (rErr) throw rErr;
       if (dErr) throw dErr;
@@ -62,7 +63,7 @@ function ProfilePage() {
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
       const split = splitDrillRatings(drills ?? []);
       return {
-        ...(prof as Record<string, unknown>),
+        ...(prof ?? ({} as Database["public"]["Tables"]["profiles"]["Row"])),
         offense_avg: offense,
         defense_avg: defense,
         ratings_count: n,
