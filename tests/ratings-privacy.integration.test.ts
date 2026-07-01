@@ -124,8 +124,7 @@ describe("ratings privacy", () => {
       }
     }
 
-    // Sign out & cleanup session
-    await a.client.auth.signOut();
+    await cleanup(a);
   }, 30_000);
 
   it("a non-participant cannot insert a rating for arbitrary users (can_rate guard)", async () => {
@@ -133,6 +132,8 @@ describe("ratings privacy", () => {
     const b = await signUpThrowaway();
     if (!a || !b) {
       console.warn("Skipping insert guard test — signup/session unavailable.");
+      await cleanup(a);
+      await cleanup(b);
       return;
     }
     const { error } = await a.client
@@ -140,7 +141,7 @@ describe("ratings privacy", () => {
       .insert({ rater_id: a.userId, ratee_id: b.userId, offense: 80, defense: 80 });
     expect(error).not.toBeNull();
     expect(error!.message.toLowerCase()).toMatch(/policy|permission|denied|can_rate|violates/);
-    await a.client.auth.signOut();
-    await b.client.auth.signOut();
+    await cleanup(a);
+    await cleanup(b);
   }, 30_000);
 });
