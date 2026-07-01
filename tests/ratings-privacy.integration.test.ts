@@ -18,18 +18,52 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL!;
 const ANON = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY!;
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 function freshClient() {
   return createClient(URL, ANON, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-async function signUpThrowaway(): Promise<{ client: SupabaseClient; userId: string } | null> {
-  const client = freshClient();
+function adminClient() {
+  return createClient(URL, SERVICE, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+async function signUpThrowaway(): Promise<{ client: SupabaseClient; userId: string; email: string } | null> {
   const email = `it-${crypto.randomUUID()}@integration.test`;
   const password = `Pw!${crypto.randomUUID()}`;
+
+  // Preferred path: pre-confirm via admin so tests work regardless of email-confirmation setting.
+  if (SERVICE) {
+    const admin = adminClient();
+    const { data: created, error: createErr } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+    if (createErr || !created.user) return null;
+    const client = freshClient();
+    const { data: signed, error: signInErr } = await client.auth.signInWithPassword({ email, password });
+    if (signInErr || !signed.session) return null;
+    return { client, userId: created.user.id, email };
+  }
+
+  // Fallback: plain signUp (skipped when email confirmation is enforced).
+  const client = freshClient();
   const { data, error } = await client.auth.signUp({ email, password });
-  if (error || !data.session) return null; // email confirmation likely enabled
-  return { client, userId: data.user!.id };
+  if (error || !data.session) return null;
+  return { client, userId: data.user!.id, email };
+}
+
+async function cleanup(user: { userId: string; client: SupabaseClient } | null) {
+  if (!user) return;
+  await user.client.auth.signOut();
+  if (SERVICE) {
+    try {
+      await adminClient().auth.admin.deleteUser(user.userId);
+    } catch {
+      /* best effort */
+    }
+  }
 }
 
 describe("ratings privacy", () => {
