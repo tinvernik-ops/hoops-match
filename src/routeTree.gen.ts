@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as JoinCodeRouteImport } from './routes/join.$code'
 import { Route as AppShootingLabRouteImport } from './routes/app.shooting-lab'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
@@ -46,6 +47,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const JoinCodeRoute = JoinCodeRouteImport.update({
+  id: '/join/$code',
+  path: '/join/$code',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppShootingLabRoute = AppShootingLabRouteImport.update({
   id: '/shooting-lab',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shooting-lab': typeof AppShootingLabRoute
+  '/join/$code': typeof JoinCodeRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shooting-lab': typeof AppShootingLabRoute
+  '/join/$code': typeof JoinCodeRoute
   '/app': typeof AppIndexRoute
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
   '/app/player/$id': typeof AppPlayerIdRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/app/profile': typeof AppProfileRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shooting-lab': typeof AppShootingLabRoute
+  '/join/$code': typeof JoinCodeRoute
   '/app/': typeof AppIndexRoute
   '/app/leagues/$id': typeof AppLeaguesIdRouteWithChildren
   '/app/messages/$userId': typeof AppMessagesUserIdRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app/shooting-lab'
+    | '/join/$code'
     | '/app/'
     | '/app/leagues/$id'
     | '/app/messages/$userId'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app/shooting-lab'
+    | '/join/$code'
     | '/app'
     | '/app/messages/$userId'
     | '/app/player/$id'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/settings'
     | '/app/shooting-lab'
+    | '/join/$code'
     | '/app/'
     | '/app/leagues/$id'
     | '/app/messages/$userId'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  JoinCodeRoute: typeof JoinCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/join/$code': {
+      id: '/join/$code'
+      path: '/join/$code'
+      fullPath: '/join/$code'
+      preLoaderRoute: typeof JoinCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/shooting-lab': {
       id: '/app/shooting-lab'
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  JoinCodeRoute: JoinCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
