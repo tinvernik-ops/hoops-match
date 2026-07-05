@@ -73,6 +73,18 @@ function LeagueDetail() {
               Code <span className="font-mono font-bold text-primary">{data.league.join_code}</span>
               <Copy className="size-3" />
             </button>
+            {data.league.owner_id === user?.id && (
+              <button
+                onClick={() => {
+                  const link = `${window.location.origin}/join/${data.league!.join_code}`;
+                  navigator.clipboard?.writeText(link);
+                  toast.success("Invite link copied");
+                }}
+                className="mt-1 ml-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Copy invite link <Copy className="size-3" />
+              </button>
+            )}
           </div>
         </div>
 
