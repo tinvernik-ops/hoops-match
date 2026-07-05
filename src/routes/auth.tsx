@@ -93,12 +93,12 @@ function AuthPage() {
             .eq("id", signupData.user.id);
         }
         toast.success("Welcome to Hoops 🏀");
-        nav({ to: "/app" });
+        postAuthNavigate();
       } else {
         const v = loginSchema.parse(form);
         const { error } = await supabase.auth.signInWithPassword({ email: v.email, password: v.password });
         if (error) throw error;
-        nav({ to: "/app" });
+        postAuthNavigate();
       }
     } catch (err: unknown) {
       const msg = err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Something went wrong";
