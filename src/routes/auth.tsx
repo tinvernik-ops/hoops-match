@@ -35,9 +35,24 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ email: "", phone: "", username: "", password: "", vertical_cm: "", weight_kg: "" });
 
+  function postAuthNavigate() {
+    let pending: string | null = null;
+    try {
+      pending = sessionStorage.getItem("pending_join_code");
+    } catch {
+      /* ignore */
+    }
+    if (pending) {
+      nav({ to: "/join/$code", params: { code: pending } });
+    } else {
+      nav({ to: "/app" });
+    }
+  }
+
   useEffect(() => {
-    if (!authLoading && user) nav({ to: "/app" });
-  }, [user, authLoading, nav]);
+    if (!authLoading && user) postAuthNavigate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
