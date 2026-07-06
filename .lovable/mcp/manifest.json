@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fmxlfweedredlgpgqufs.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "hoops-mcp",
+      "version": "0.1.0",
+      "title": "Hoops"
+    },
+    "tools": [
+      {
+        "name": "get_my_profile",
+        "title": "Get my Hoops profile",
+        "description": "Return the signed-in user's Hoops profile: username, height, vertical, weight, and last known location freshness.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_leagues",
+        "title": "List my leagues",
+        "description": "List all Hoops leagues the signed-in user is a member of, with league id, name, and join code.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_nearby_players",
+        "title": "List nearby hoopers",
+        "description": "List other Hoops players with fresh locations (checked in within the last 3 days), sorted by distance from the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "radius_km": {
+              "default": 25,
+              "description": "Search radius in kilometers. Defaults to 25 km.",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 200
+            },
+            "limit": {
+              "default": 20,
+              "description": "Maximum number of players to return. Defaults to 20.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_nearby_courts",
+        "title": "List nearby courts",
+        "description": "List basketball courts near the signed-in user, ordered by distance, with a count of hoopers currently checked in at each court.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "radius_km": {
+              "default": 25,
+              "description": "Search radius in kilometers. Defaults to 25 km.",
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 200
+            },
+            "limit": {
+              "default": 20,
+              "description": "Maximum number of courts to return. Defaults to 20.",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

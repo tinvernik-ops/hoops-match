@@ -36,14 +36,21 @@ function AuthPage() {
   const [form, setForm] = useState({ email: "", phone: "", username: "", password: "", vertical_cm: "", weight_kg: "" });
 
   function postAuthNavigate() {
-    let pending: string | null = null;
+    let pendingConsent: string | null = null;
+    let pendingJoin: string | null = null;
     try {
-      pending = sessionStorage.getItem("pending_join_code");
+      pendingConsent = sessionStorage.getItem("pending_oauth_consent");
+      pendingJoin = sessionStorage.getItem("pending_join_code");
     } catch {
       /* ignore */
     }
-    if (pending) {
-      nav({ to: "/join/$code", params: { code: pending } });
+    if (pendingConsent && pendingConsent.startsWith("/")) {
+      try { sessionStorage.removeItem("pending_oauth_consent"); } catch { /* ignore */ }
+      window.location.href = pendingConsent;
+      return;
+    }
+    if (pendingJoin) {
+      nav({ to: "/join/$code", params: { code: pendingJoin } });
     } else {
       nav({ to: "/app" });
     }
