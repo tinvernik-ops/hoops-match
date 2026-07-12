@@ -17,6 +17,7 @@ const en: Dict = {
   // nav
   "nav.court": "Court",
   "nav.leagues": "Leagues",
+  "nav.messages": "Chat",
   "nav.profile": "Profile",
   // common
   "common.back": "Back",
@@ -192,7 +193,7 @@ const en: Dict = {
 };
 
 const hr: Dict = {
-  "nav.court": "Teren", "nav.leagues": "Lige", "nav.profile": "Profil",
+  "nav.court": "Teren", "nav.leagues": "Lige", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Natrag", "common.loading": "Učitavanje…", "common.save": "Spremi", "common.cancel": "Odustani",
   "common.close": "Zatvori", "common.create": "Stvori", "common.delete": "Obriši", "common.optional": "opcionalno",
   "common.opt": "opc.", "common.away": "udaljeno", "common.skip": "Preskoči",
@@ -266,7 +267,7 @@ const hr: Dict = {
 };
 
 const es: Dict = {
-  "nav.court": "Cancha", "nav.leagues": "Ligas", "nav.profile": "Perfil",
+  "nav.court": "Cancha", "nav.leagues": "Ligas", "nav.messages": "Chat", "nav.profile": "Perfil",
   "common.back": "Atrás", "common.loading": "Cargando…", "common.save": "Guardar", "common.cancel": "Cancelar",
   "common.close": "Cerrar", "common.create": "Crear", "common.delete": "Eliminar", "common.optional": "opcional",
   "common.opt": "opc.", "common.away": "de distancia", "common.skip": "Saltar",
@@ -340,7 +341,7 @@ const es: Dict = {
 };
 
 const de: Dict = {
-  "nav.court": "Court", "nav.leagues": "Ligen", "nav.profile": "Profil",
+  "nav.court": "Court", "nav.leagues": "Ligen", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Zurück", "common.loading": "Laden…", "common.save": "Speichern", "common.cancel": "Abbrechen",
   "common.close": "Schließen", "common.create": "Erstellen", "common.delete": "Löschen", "common.optional": "optional",
   "common.opt": "opt.", "common.away": "entfernt", "common.skip": "Überspringen",
@@ -414,7 +415,7 @@ const de: Dict = {
 };
 
 const fr: Dict = {
-  "nav.court": "Terrain", "nav.leagues": "Ligues", "nav.profile": "Profil",
+  "nav.court": "Terrain", "nav.leagues": "Ligues", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Retour", "common.loading": "Chargement…", "common.save": "Enregistrer", "common.cancel": "Annuler",
   "common.close": "Fermer", "common.create": "Créer", "common.delete": "Supprimer", "common.optional": "optionnel",
   "common.opt": "opt.", "common.away": "de distance", "common.skip": "Passer",
@@ -488,7 +489,7 @@ const fr: Dict = {
 };
 
 const it: Dict = {
-  "nav.court": "Campo", "nav.leagues": "Leghe", "nav.profile": "Profilo",
+  "nav.court": "Campo", "nav.leagues": "Leghe", "nav.messages": "Chat", "nav.profile": "Profilo",
   "common.back": "Indietro", "common.loading": "Caricamento…", "common.save": "Salva", "common.cancel": "Annulla",
   "common.close": "Chiudi", "common.create": "Crea", "common.delete": "Elimina", "common.optional": "opzionale",
   "common.opt": "opz.", "common.away": "di distanza", "common.skip": "Salta",

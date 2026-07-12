@@ -1,11 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchConversations } from "@/lib/messages";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "@/components/user-avatar";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 export const Route = createFileRoute("/app/messages/")({
   component: MessagesPage,
@@ -13,7 +13,6 @@ export const Route = createFileRoute("/app/messages/")({
 
 function MessagesPage() {
   const { user } = useAuth();
-  const nav = useNavigate();
 
   const { data: convos = [], refetch } = useQuery({
     queryKey: ["conversations", user?.id],
@@ -43,9 +42,6 @@ function MessagesPage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-4">
-      <button onClick={() => nav({ to: "/app" })} className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
-        <ArrowLeft className="size-4" /> Back
-      </button>
       <h1 className="text-display text-3xl font-bold mb-5">Messages</h1>
 
       {convos.length === 0 ? (
