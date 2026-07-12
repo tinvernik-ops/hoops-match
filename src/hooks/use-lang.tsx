@@ -341,7 +341,7 @@ const es: Dict = {
 };
 
 const de: Dict = {
-  "nav.court": "Court", "nav.leagues": "Ligen", "nav.profile": "Profil",
+  "nav.court": "Court", "nav.leagues": "Ligen", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Zurück", "common.loading": "Laden…", "common.save": "Speichern", "common.cancel": "Abbrechen",
   "common.close": "Schließen", "common.create": "Erstellen", "common.delete": "Löschen", "common.optional": "optional",
   "common.opt": "opt.", "common.away": "entfernt", "common.skip": "Überspringen",
@@ -415,7 +415,7 @@ const de: Dict = {
 };
 
 const fr: Dict = {
-  "nav.court": "Terrain", "nav.leagues": "Ligues", "nav.profile": "Profil",
+  "nav.court": "Terrain", "nav.leagues": "Ligues", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Retour", "common.loading": "Chargement…", "common.save": "Enregistrer", "common.cancel": "Annuler",
   "common.close": "Fermer", "common.create": "Créer", "common.delete": "Supprimer", "common.optional": "optionnel",
   "common.opt": "opt.", "common.away": "de distance", "common.skip": "Passer",
