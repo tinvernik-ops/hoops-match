@@ -489,7 +489,7 @@ const fr: Dict = {
 };
 
 const it: Dict = {
-  "nav.court": "Campo", "nav.leagues": "Leghe", "nav.profile": "Profilo",
+  "nav.court": "Campo", "nav.leagues": "Leghe", "nav.messages": "Chat", "nav.profile": "Profilo",
   "common.back": "Indietro", "common.loading": "Caricamento…", "common.save": "Salva", "common.cancel": "Annulla",
   "common.close": "Chiudi", "common.create": "Crea", "common.delete": "Elimina", "common.optional": "opzionale",
   "common.opt": "opz.", "common.away": "di distanza", "common.skip": "Salta",
