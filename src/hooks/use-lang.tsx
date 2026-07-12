@@ -17,6 +17,7 @@ const en: Dict = {
   // nav
   "nav.court": "Court",
   "nav.leagues": "Leagues",
+  "nav.messages": "Chat",
   "nav.profile": "Profile",
   // common
   "common.back": "Back",
@@ -192,7 +193,7 @@ const en: Dict = {
 };
 
 const hr: Dict = {
-  "nav.court": "Teren", "nav.leagues": "Lige", "nav.profile": "Profil",
+  "nav.court": "Teren", "nav.leagues": "Lige", "nav.messages": "Chat", "nav.profile": "Profil",
   "common.back": "Natrag", "common.loading": "Učitavanje…", "common.save": "Spremi", "common.cancel": "Odustani",
   "common.close": "Zatvori", "common.create": "Stvori", "common.delete": "Obriši", "common.optional": "opcionalno",
   "common.opt": "opc.", "common.away": "udaljeno", "common.skip": "Preskoči",
@@ -266,7 +267,7 @@ const hr: Dict = {
 };
 
 const es: Dict = {
-  "nav.court": "Cancha", "nav.leagues": "Ligas", "nav.profile": "Perfil",
+  "nav.court": "Cancha", "nav.leagues": "Ligas", "nav.messages": "Chat", "nav.profile": "Perfil",
   "common.back": "Atrás", "common.loading": "Cargando…", "common.save": "Guardar", "common.cancel": "Cancelar",
   "common.close": "Cerrar", "common.create": "Crear", "common.delete": "Eliminar", "common.optional": "opcional",
   "common.opt": "opc.", "common.away": "de distancia", "common.skip": "Saltar",
