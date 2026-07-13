@@ -4,6 +4,9 @@ export const THREE_ZONES = new Set([
   "three_wing_l",
   "three_wing_r",
   "three_top",
+  "three_deep_l",
+  "three_deep_top",
+  "three_deep_r",
 ]);
 
 export const MID_ZONES = new Set([
