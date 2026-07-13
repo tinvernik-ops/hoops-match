@@ -10,7 +10,7 @@ import { fetchCourts, clusterPlayersAtCourts, createCourt, type CourtWithCount }
 import { PlayerCard } from "@/components/player-card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink, MessageSquare, ShieldAlert } from "lucide-react";
+import { MapPin, Bell, BellOff, Plus, Users, Navigation, ExternalLink, ShieldAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
