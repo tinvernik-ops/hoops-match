@@ -28,6 +28,9 @@ const ZONES: Zone[] = [
   { id: "three_wing_l", label: "Wing 3 L", x: 14, y: 50 },
   { id: "three_wing_r", label: "Wing 3 R", x: 86, y: 50 },
   { id: "three_top", label: "Top of Key 3", x: 50, y: 35 },
+  { id: "three_deep_l", label: "Deep 3 L", x: 8, y: 30 },
+  { id: "three_deep_top", label: "Deep 3 Top", x: 50, y: 18 },
+  { id: "three_deep_r", label: "Deep 3 R", x: 92, y: 30 },
 ];
 
 type Entry = { made: string; att: string };
