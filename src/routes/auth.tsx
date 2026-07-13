@@ -182,6 +182,15 @@ function AuthPage() {
           </Button>
         </form>
 
+        {mode === "login" && (
+          <>
+            <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="flex-1 h-px bg-border" /> or sign in with a code <div className="flex-1 h-px bg-border" />
+            </div>
+            <OtpSignIn onSignedIn={postAuthNavigate} />
+          </>
+        )}
+
         <p className="text-xs text-center text-muted-foreground mt-6">
           By signing up you agree to share your location and receive notifications about hoop seshes.
         </p>
@@ -190,5 +199,120 @@ function AuthPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+function OtpSignIn({ onSignedIn }: { onSignedIn: () => void }) {
+  const [channel, setChannel] = useState<"email" | "sms">("email");
+  const [identifier, setIdentifier] = useState("");
+  const [code, setCode] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function sendCode() {
+    setBusy(true);
+    try {
+      const value = identifier.trim();
+      if (channel === "email") {
+        if (!/^\S+@\S+\.\S+$/.test(value)) throw new Error("Enter a valid email");
+        const { error } = await supabase.auth.signInWithOtp({
+          email: value,
+          options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/app` },
+        });
+        if (error) throw error;
+      } else {
+        if (!/^\+?[\d\s().-]{7,20}$/.test(value)) throw new Error("Enter a valid phone number");
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: value,
+          options: { shouldCreateUser: false },
+        });
+        if (error) throw error;
+      }
+      setSent(true);
+      toast.success("Code sent — check your " + (channel === "email" ? "inbox" : "phone"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send code");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verify() {
+    setBusy(true);
+    try {
+      const token = code.trim();
+      if (!/^\d{4,8}$/.test(token)) throw new Error("Enter the code you received");
+      const value = identifier.trim();
+      const { error } =
+        channel === "email"
+          ? await supabase.auth.verifyOtp({ email: value, token, type: "email" })
+          : await supabase.auth.verifyOtp({ phone: value, token, type: "sms" });
+      if (error) throw error;
+      onSignedIn();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid code");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex rounded-lg bg-secondary p-1">
+        {(["email", "sms"] as const).map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => { setChannel(c); setSent(false); setCode(""); setIdentifier(""); }}
+            className={`flex-1 rounded-md py-2 text-xs font-semibold transition ${
+              channel === c ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            {c === "email" ? "Email code" : "SMS code"}
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <Label htmlFor="otp-id">{channel === "email" ? "Email" : "Phone (e.g. +15551234567)"}</Label>
+        <Input
+          id="otp-id"
+          type={channel === "email" ? "email" : "tel"}
+          autoComplete={channel === "email" ? "email" : "tel"}
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          disabled={sent}
+        />
+      </div>
+
+      {sent && (
+        <div>
+          <Label htmlFor="otp-code">Verification code</Label>
+          <Input
+            id="otp-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={8}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </div>
+      )}
+
+      {!sent ? (
+        <Button type="button" onClick={sendCode} disabled={busy || !identifier} variant="secondary" className="w-full h-11 font-bold">
+          {busy ? <Loader2 className="animate-spin" /> : `Send ${channel === "email" ? "email" : "SMS"} code`}
+        </Button>
+      ) : (
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Button type="button" onClick={verify} disabled={busy || !code} className="h-11 font-bold">
+            {busy ? <Loader2 className="animate-spin" /> : "Verify & sign in"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => { setSent(false); setCode(""); }} className="h-11">
+            Change
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
