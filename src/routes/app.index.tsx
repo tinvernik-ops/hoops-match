@@ -86,7 +86,6 @@ function CourtPage() {
             </span>
             <InstallButton />
             <VerifyButton />
-            <InboxButton />
           </div>
         </div>
 
