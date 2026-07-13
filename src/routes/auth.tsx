@@ -182,6 +182,15 @@ function AuthPage() {
           </Button>
         </form>
 
+        {mode === "login" && (
+          <>
+            <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <div className="flex-1 h-px bg-border" /> or sign in with a code <div className="flex-1 h-px bg-border" />
+            </div>
+            <OtpSignIn onSignedIn={postAuthNavigate} />
+          </>
+        )}
+
         <p className="text-xs text-center text-muted-foreground mt-6">
           By signing up you agree to share your location and receive notifications about hoop seshes.
         </p>
