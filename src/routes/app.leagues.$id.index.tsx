@@ -38,7 +38,10 @@ function LeagueDetail() {
 
   const filtered = useMemo(() => {
     if (!data) return null;
-    const games = filter === "all" ? data.games : data.games.filter((g) => g.game_type === filter);
+    // "All" excludes 1v1 games so solo matches don't pollute the league leaderboards.
+    const games = filter === "all"
+      ? data.games.filter((g) => g.game_type !== "1v1")
+      : data.games.filter((g) => g.game_type === filter);
     const gameIds = new Set(games.map((g) => g.id));
     const gamePlayers = data.gamePlayers.filter((gp) => gameIds.has(gp.game_id));
     return { games, gamePlayers };
