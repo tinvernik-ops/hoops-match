@@ -200,10 +200,12 @@ function CallUpButton({ toId, toName }: { toId: string; toName: string }) {
 
 function RateDialog({
   toId,
+  toName,
   initial,
   onSaved,
 }: {
   toId: string;
+  toName: string;
   initial: { offense: number; defense: number } | null;
   onSaved: () => void;
 }) {
@@ -211,26 +213,59 @@ function RateDialog({
   const [open, setOpen] = useState(false);
   const [off, setOff] = useState(initial?.offense ?? 75);
   const [def, setDef] = useState(initial?.defense ?? 75);
+  const [step, setStep] = useState<"edit" | "confirm">("edit");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      setOff(initial?.offense ?? 75);
+      setDef(initial?.defense ?? 75);
+      setStep("edit");
+      setErr(null);
+    }
+    setOpen(next);
+  }
+
+  const clamp = (n: number) => Math.max(0, Math.min(99, Math.round(n)));
+  const validOff = Number.isFinite(off) && off >= 0 && off <= 99;
+  const validDef = Number.isFinite(def) && def >= 0 && def <= 99;
+  const canContinue = validOff && validDef;
 
   async function save() {
     if (!user) return;
-    setBusy(true);
-    const { error } = await supabase
-      .from("ratings")
-      .upsert({ rater_id: user.id, ratee_id: toId, offense: off, defense: def }, { onConflict: "rater_id,ratee_id" });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
+    if (!canContinue) {
+      setErr("Both values must be between 0 and 99.");
       return;
     }
-    toast.success("Rating saved");
+    setBusy(true);
+    setErr(null);
+    const { error } = await supabase
+      .from("ratings")
+      .upsert(
+        { rater_id: user.id, ratee_id: toId, offense: clamp(off), defense: clamp(def) },
+        { onConflict: "rater_id,ratee_id" },
+      );
+    setBusy(false);
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes("row-level") || msg.includes("policy") || msg.includes("can_rate")) {
+        setErr("You can only rate players you've played with or invited.");
+      } else if (msg.includes("permission")) {
+        setErr("Permission denied. Try signing out and back in.");
+      } else {
+        setErr(error.message);
+      }
+      toast.error("Couldn't save rating");
+      return;
+    }
+    toast.success(initial ? `Updated your rating for @${toName}` : `Rated @${toName}`);
     setOpen(false);
     onSaved();
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="lg" className="w-full">
           {initial ? "Update rating" : "Rate this player"}
@@ -238,17 +273,68 @@ function RateDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>How they hoop</DialogTitle>
+          <DialogTitle>
+            {step === "edit" ? `How does @${toName} hoop?` : "Confirm rating"}
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 py-2">
-          <RatingSlider label="Offense" value={off} onChange={setOff} />
-          <RatingSlider label="Defense" value={def} onChange={setDef} />
-        </div>
-        <DialogFooter>
-          <Button onClick={save} disabled={busy} className="w-full font-bold">
-            {busy ? <Loader2 className="animate-spin" /> : "Save rating"}
-          </Button>
-        </DialogFooter>
+
+        {step === "edit" ? (
+          <>
+            <div className="space-y-6 py-2">
+              <RatingSlider label="Offense" value={off} onChange={(n) => setOff(clamp(n))} />
+              <RatingSlider label="Defense" value={def} onChange={(n) => setDef(clamp(n))} />
+              <p className="text-xs text-muted-foreground text-center">
+                0–99 scale · NBA 2K style. You can update this later.
+              </p>
+            </div>
+            {err && <p className="text-sm text-destructive text-center">{err}</p>}
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (!canContinue) {
+                    setErr("Both values must be between 0 and 99.");
+                    return;
+                  }
+                  setErr(null);
+                  setStep("confirm");
+                }}
+                disabled={!canContinue}
+                className="w-full font-bold"
+              >
+                Review
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <div className="py-2 space-y-3">
+              <div className="rounded-xl bg-secondary p-4 grid grid-cols-2 gap-3 text-center">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Offense</div>
+                  <div className="text-display text-4xl font-bold text-primary">{clamp(off)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Defense</div>
+                  <div className="text-display text-4xl font-bold text-primary">{clamp(def)}</div>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {initial
+                  ? `Replaces your previous rating (${initial.offense} / ${initial.defense}).`
+                  : `Submitting this rates @${toName} for the first time.`}
+              </p>
+              {err && <p className="text-sm text-destructive text-center">{err}</p>}
+            </div>
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <Button variant="ghost" onClick={() => setStep("edit")} disabled={busy} className="w-full sm:w-auto">
+                Back
+              </Button>
+              <Button onClick={save} disabled={busy} className="w-full font-bold">
+                {busy ? <Loader2 className="animate-spin" /> : "Confirm & save"}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
