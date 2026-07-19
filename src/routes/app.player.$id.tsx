@@ -124,6 +124,7 @@ function PlayerPage() {
           {data.canRate ? (
             <RateDialog
               toId={p.id}
+              toName={p.username}
               initial={data.myRating ?? null}
               onSaved={() => refetch()}
             />
