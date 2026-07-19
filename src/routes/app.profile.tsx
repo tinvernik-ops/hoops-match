@@ -50,10 +50,11 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const [{ data: profRaw, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
+      const [{ data: profRaw, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }, { data: given, error: gErr }] = await Promise.all([
         supabase.rpc("get_my_profile").maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
         supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
+        supabase.from("ratings").select("ratee_id,offense,defense,created_at").eq("rater_id", user!.id).order("created_at", { ascending: false }).limit(5),
       ]);
       const prof = profRaw as unknown as Database["public"]["Tables"]["profiles"]["Row"] | null;
       if (error) throw error;
