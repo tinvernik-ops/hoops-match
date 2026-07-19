@@ -15,6 +15,7 @@ import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
 import { useLang } from "@/hooks/use-lang";
 import { uploadAvatar } from "@/lib/avatars";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { splitDrillRatings } from "@/lib/shot-ratings";
 import { PlayerBadges } from "@/components/player-badges";
 
