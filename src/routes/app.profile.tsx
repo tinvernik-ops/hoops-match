@@ -60,10 +60,26 @@ function ProfilePage() {
       if (error) throw error;
       if (rErr) throw rErr;
       if (dErr) throw dErr;
+      if (gErr) throw gErr;
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
       const split = splitDrillRatings(drills ?? []);
+      const ids = Array.from(new Set((given ?? []).map((g) => g.ratee_id)));
+      let nameMap = new Map<string, string>();
+      if (ids.length) {
+        const { data: profs } = await fromPublicProfiles<{ id: string; username: string }>()
+          .select("id,username")
+          .in("id", ids);
+        nameMap = new Map((profs ?? []).map((p) => [p.id, p.username]));
+      }
+      const recent_given = (given ?? []).map((g) => ({
+        ratee_id: g.ratee_id,
+        offense: g.offense,
+        defense: g.defense,
+        created_at: g.created_at,
+        username: nameMap.get(g.ratee_id) ?? "unknown",
+      }));
       return {
         ...(prof ?? ({} as Database["public"]["Tables"]["profiles"]["Row"])),
         offense_avg: offense,
@@ -75,6 +91,7 @@ function ProfilePage() {
         total_attempts: split.totalAttempts,
         three_attempts: split.threeAttempts,
         mid_attempts: split.midAttempts,
+        recent_given,
       };
     },
     enabled: !!user,
