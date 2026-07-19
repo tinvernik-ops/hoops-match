@@ -224,6 +224,32 @@ function ProfilePage() {
         <MessageSquare className="size-5" /> Messages
       </Link>
 
+      {profile?.recent_given && profile.recent_given.length > 0 && (
+        <div className="mb-6 rounded-2xl bg-card p-4">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+            Recent ratings you've given
+          </div>
+          <ul className="space-y-2">
+            {profile.recent_given.map((r) => (
+              <li key={`${r.ratee_id}-${r.created_at}`}>
+                <Link
+                  to="/app/player/$id"
+                  params={{ id: r.ratee_id }}
+                  className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2 text-sm"
+                >
+                  <span className="font-semibold truncate">@{r.username}</span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className="text-emerald-500 font-bold tabular-nums">OFF {r.offense}</span>
+                    <span className="text-red-500 font-bold tabular-nums">DEF {r.defense}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+
       <form onSubmit={onSave} className="space-y-4">
         <div>
           <Label htmlFor="username">{t("profile.username")}</Label>
