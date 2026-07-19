@@ -15,6 +15,7 @@ import { StatBarCard } from "@/components/stat-bar-card";
 import { PLAYSTYLES } from "@/lib/playstyles";
 import { useLang } from "@/hooks/use-lang";
 import { uploadAvatar } from "@/lib/avatars";
+import { fromPublicProfiles } from "@/lib/public-profiles";
 import { splitDrillRatings } from "@/lib/shot-ratings";
 import { PlayerBadges } from "@/components/player-badges";
 
@@ -50,19 +51,36 @@ function ProfilePage() {
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
-      const [{ data: profRaw, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }] = await Promise.all([
+      const [{ data: profRaw, error }, { data: ratings, error: rErr }, { data: drills, error: dErr }, { data: given, error: gErr }] = await Promise.all([
         supabase.rpc("get_my_profile").maybeSingle(),
         supabase.from("ratings").select("offense,defense").eq("ratee_id", user!.id),
         supabase.from("shooting_drills").select("zone,makes,attempts").eq("user_id", user!.id),
+        supabase.from("ratings").select("ratee_id,offense,defense,created_at").eq("rater_id", user!.id).order("created_at", { ascending: false }).limit(5),
       ]);
       const prof = profRaw as unknown as Database["public"]["Tables"]["profiles"]["Row"] | null;
       if (error) throw error;
       if (rErr) throw rErr;
       if (dErr) throw dErr;
+      if (gErr) throw gErr;
       const n = ratings?.length ?? 0;
       const offense = n ? Math.round(ratings!.reduce((s, r) => s + r.offense, 0) / n) : null;
       const defense = n ? Math.round(ratings!.reduce((s, r) => s + r.defense, 0) / n) : null;
       const split = splitDrillRatings(drills ?? []);
+      const ids = Array.from(new Set((given ?? []).map((g) => g.ratee_id)));
+      let nameMap = new Map<string, string>();
+      if (ids.length) {
+        const { data: profs } = await fromPublicProfiles<{ id: string; username: string }>()
+          .select("id,username")
+          .in("id", ids);
+        nameMap = new Map((profs ?? []).map((p) => [p.id, p.username]));
+      }
+      const recent_given = (given ?? []).map((g) => ({
+        ratee_id: g.ratee_id,
+        offense: g.offense,
+        defense: g.defense,
+        created_at: g.created_at,
+        username: nameMap.get(g.ratee_id) ?? "unknown",
+      }));
       return {
         ...(prof ?? ({} as Database["public"]["Tables"]["profiles"]["Row"])),
         offense_avg: offense,
@@ -74,6 +92,7 @@ function ProfilePage() {
         total_attempts: split.totalAttempts,
         three_attempts: split.threeAttempts,
         mid_attempts: split.midAttempts,
+        recent_given,
       };
     },
     enabled: !!user,
@@ -204,6 +223,32 @@ function ProfilePage() {
       >
         <MessageSquare className="size-5" /> Messages
       </Link>
+
+      {profile?.recent_given && profile.recent_given.length > 0 && (
+        <div className="mb-6 rounded-2xl bg-card p-4">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+            Recent ratings you've given
+          </div>
+          <ul className="space-y-2">
+            {profile.recent_given.map((r) => (
+              <li key={`${r.ratee_id}-${r.created_at}`}>
+                <Link
+                  to="/app/player/$id"
+                  params={{ id: r.ratee_id }}
+                  className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2 text-sm"
+                >
+                  <span className="font-semibold truncate">@{r.username}</span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className="text-emerald-500 font-bold tabular-nums">OFF {r.offense}</span>
+                    <span className="text-red-500 font-bold tabular-nums">DEF {r.defense}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
 
       <form onSubmit={onSave} className="space-y-4">
         <div>
